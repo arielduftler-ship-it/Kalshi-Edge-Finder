@@ -40,6 +40,16 @@ def normalize(name: str) -> str:
     return "".join(ch.lower() for ch in name if ch.isalnum())
 
 
+def price_cents(market: dict, side: str) -> int:
+    """Kalshi's current API returns prices as dollar strings
+    (e.g. yes_bid_dollars: "0.5600"), not plain integer cents.
+    Falls back to the older cents-integer field if present."""
+    dollars_key = f"{side}_dollars"
+    if dollars_key in market and market[dollars_key] is not None:
+        return int(round(float(market[dollars_key]) * 100))
+    return int(market[side])
+
+
 def match_kalshi_market(team_name: str, markets: list):
     """Very simple substring match between a team name and Kalshi market
     titles. Sportsbook team names ('Kansas City Chiefs') and Kalshi market
@@ -111,7 +121,7 @@ def run_scan():
                     sig = compute_signal(
                         game_label=f"{away} @ {home}", team=home,
                         book_odds_a=out_home["price"], book_odds_b=out_away["price"],
-                        kalshi_yes_bid=market["yes_bid"], kalshi_yes_ask=market["yes_ask"],
+                        kalshi_yes_bid=price_cents(market, "yes_bid"), kalshi_yes_ask=price_cents(market, "yes_ask"),
                         kalshi_ticker=market["ticker"],
                     )
                 except Exception as e:
