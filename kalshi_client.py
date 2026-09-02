@@ -27,7 +27,7 @@ import requests
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
-PROD_BASE_URL = "https://trading-api.kalshi.com/trade-api/v2"
+PROD_BASE_URL = "https://api.elections.kalshi.com/trade-api/v2"
 DEMO_BASE_URL = "https://demo-api.kalshi.co/trade-api/v2"
 
 
