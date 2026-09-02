@@ -1,1 +1,2 @@
 scan_timestamp,sport,game_label,team,book_fair_prob,kalshi_price,raw_edge,net_edge,side,kalshi_ticker
+2026-09-02T17:46:26.757626+00:00,mlb,Detroit Tigers @ Minnesota Twins,Minnesota Twins,0.5128,0.485,0.0278,0.0053,buy_yes,KXMLBGAME-26SEP021940DETMIN-DET
