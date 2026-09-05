@@ -1,10 +1,13 @@
 """
 run_daily_scan.py
 
-Pulls live sportsbook odds + Kalshi market prices for NFL/NBA/MLB, computes
-a signal for every game where we can match the two sources, and appends the
-results to data/scan_log.csv. Run this daily (see .github/workflows/daily_scan.yml)
-to build the historical dataset a real backtest needs.
+Pulls live sportsbook odds + Kalshi market prices for NFL/NBA/MLB, and logs a
+row to data/scan_log.csv only for games that are actual underpriced-favorite
+signals (a real favorite per the sportsbook, priced by Kalshi below 50%,
+clearing a 1% net edge after fees/spread). Every other matched game -- a
+correctly-priced favorite, an overpriced underdog, anything below threshold
+-- is evaluated but not written, so the log only ever contains bets worth
+looking at. Run this daily (see .github/workflows/daily_scan.yml).
 
 Usage:
     export ODDS_API_KEY=...
@@ -52,47 +55,74 @@ def price_cents(market: dict, side: str) -> int:
     return int(market[side])
 
 
-def match_kalshi_market(team_name: str, sport: str, markets: list):
-    """Matches a team to its Kalshi 'this team wins' market.
+def match_kalshi_market(home_team: str, away_team: str, sport: str, markets: list):
+    """Matches a specific game (home_team vs away_team) to its Kalshi
+    'home team wins' market.
 
-    Kalshi's `title` field describes the whole matchup (e.g. "Detroit Tigers
-    at Minnesota Twins") and is IDENTICAL across every per-team market in
-    that event -- searching for a nickname inside `title` matches all of
-    them, not just the one you want. This produced a confirmed bad row in
-    scan_log.csv where "Minnesota Twins" was logged against the Tigers'
-    market by accident.
+    Two separate bugs, both confirmed against real logged data, are fixed here:
 
-    Fix: Kalshi's ticker suffix (the segment after the final "-", e.g. "DET"
-    in KXMLBGAME-26SEP021940DETMIN-DET) reliably identifies which team a
-    specific market belongs to. Match on that. Falls back to a disambiguated
-    full-nickname search of `subtitle` (never `title`, and never just the
-    last word) if the team isn't in team_aliases yet or no ticker matches --
-    and prints a warning so a silent/fragile match is never invisible.
+    1. Kalshi's `title` field describes the whole matchup and is IDENTICAL
+       across every per-team market in that event -- searching for a
+       nickname inside `title` matches all of them. Fixed by matching on
+       the ticker suffix (the segment after the final "-", e.g. "DET" in
+       KXMLBGAME-26SEP021940DETMIN-DET) instead.
+
+    2. The ticker-suffix fix above is necessary but NOT sufficient: The Odds
+       API returns every game on a team's schedule (the whole season), while
+       Kalshi only has ONE open market per team at a time (their next game).
+       Matching on the team abbreviation alone means every future scheduled
+       game for, say, the Chiefs gets attached to whichever single Chiefs
+       market happens to be open right now -- confirmed in real data, where
+       four different "away team @ Kansas City Chiefs" rows all got stapled
+       to the same KXNFLGAME-26SEP14DENKC-KC ticker (the Broncos game), even
+       though only the Broncos game was real. Fixed by also requiring the
+       AWAY team's abbreviation to appear in the ticker's event segment
+       (the part between the series prefix and the final "-TEAM" suffix,
+       e.g. "26SEP14DENKC" must contain both DEN and KC) -- i.e. verifying
+       the whole matchup, not just one side of it.
     """
-    alias = team_aliases.lookup(sport, team_name)
+    home_alias = team_aliases.lookup(sport, home_team)
+    away_alias = team_aliases.lookup(sport, away_team)
+    away_abbr = away_alias[0] if away_alias else None
 
-    if alias:
-        abbr, nickname_key = alias
+    if home_alias:
+        home_abbr, home_nick = home_alias
         for m in markets:
-            ticker_suffix = m.get("ticker", "").split("-")[-1].upper()
-            if ticker_suffix == abbr:
-                return m
-        # Abbreviation didn't hit any ticker -- fall through to nickname
-        # search on subtitle only, using the FULL disambiguated nickname.
+            parts = m.get("ticker", "").split("-")
+            if len(parts) < 3:
+                continue
+            suffix = parts[-1].upper()
+            event_segment = parts[-2].upper()
+            if suffix != home_abbr:
+                continue
+            if away_abbr and away_abbr not in event_segment:
+                # Right team, wrong game -- this Kalshi market belongs to a
+                # different matchup for the same team. Keep looking rather
+                # than silently attaching the wrong game's price.
+                continue
+            return m
+
+        # No ticker matched both teams. Fall back to a subtitle nickname
+        # search, but only accept it if the away team's name also shows up
+        # in the shared title -- otherwise we're back to matching one side
+        # of a different game.
         for m in markets:
             subtitle = normalize(m.get("subtitle", ""))
-            if nickname_key in subtitle:
-                print(f"WARNING: {team_name} matched via subtitle fallback, not ticker suffix "
-                      f"(no market ticker ended in -{abbr}) -- verify this game manually.")
+            title = normalize(m.get("title", ""))
+            if home_nick not in subtitle:
+                continue
+            away_ok = (not away_alias) or (away_alias[1] in title) or (normalize(away_team) in title)
+            if away_ok:
+                print(f"WARNING: {home_team} vs {away_team} matched via subtitle fallback, not ticker "
+                      f"(no market ticker matched both teams) -- verify this game manually.")
                 return m
-        print(f"WARNING: no Kalshi market found for {team_name} ({sport}) via ticker or subtitle.")
-        return None
+        return None  # no open Kalshi market for this specific matchup right now
 
-    # Team not in team_aliases.py at all -- old, fragile last-word heuristic,
-    # kept only as a last resort. Loudly flagged so it's never silent.
-    print(f"WARNING: '{team_name}' not in team_aliases.py -- falling back to fragile "
+    # home team not in team_aliases.py at all -- old, fragile last-word
+    # heuristic, kept only as a last resort. Loudly flagged so it's never silent.
+    print(f"WARNING: '{home_team}' not in team_aliases.py -- falling back to fragile "
           f"last-word nickname matching. Add this team to team_aliases.py.")
-    target_nickname = normalize(team_name.split()[-1])
+    target_nickname = normalize(home_team.split()[-1])
     for m in markets:
         subtitle = normalize(m.get("subtitle", ""))
         if target_nickname and target_nickname in subtitle:
@@ -148,9 +178,9 @@ def run_scan():
                 if not out_home or not out_away:
                     continue
 
-                market = match_kalshi_market(home, sport, kalshi_markets)
+                market = match_kalshi_market(home, away, sport, kalshi_markets)
                 if not market:
-                    continue  # no matching Kalshi market found for this game
+                    continue  # no open Kalshi market for this specific matchup right now
 
                 try:
                     sig = compute_signal(
@@ -161,6 +191,14 @@ def run_scan():
                     )
                 except Exception as e:
                     print(f"signal calc failed for {home} vs {away}: {e}")
+                    continue
+
+                # We're only trading underpriced favorites right now (a real
+                # favorite that Kalshi's crowd has priced below 50%) clearing
+                # a 1% net edge -- not every matched game or every edge sign.
+                # Correctly-priced favorites and overpriced underdogs are
+                # skipped entirely so real signals don't get buried.
+                if not (sig.net_edge >= 0.01 and is_underpriced_favorite(sig)):
                     continue
 
                 writer.writerow({
@@ -177,14 +215,8 @@ def run_scan():
                     "outcome": "",
                 })
                 rows_written += 1
-                # We're only acting on underpriced favorites right now (a real
-                # favorite that Kalshi's crowd has priced below 50%) — not
-                # every edge the model finds. Every matched game still gets
-                # logged above regardless, so nothing is lost for backtesting;
-                # this just controls what gets flagged as an actionable SIGNAL.
-                if sig.net_edge >= 0.01 and is_underpriced_favorite(sig):
-                    print(f"SIGNAL  {sig.game_label:30s} {sig.side:8s} net_edge={sig.net_edge:+.3f} "
-                          f"(favorite @ {sig.kalshi_price:.2f})")
+                print(f"SIGNAL  {sig.game_label:30s} {sig.side:8s} net_edge={sig.net_edge:+.3f} "
+                      f"(favorite @ {sig.kalshi_price:.2f})")
 
     print(f"Scan complete: {rows_written} rows written to {LOG_PATH}")
 
