@@ -96,28 +96,32 @@ def export():
     raw_edge_rng = f"Data!{col['raw_edge']}2:{col['raw_edge']}{last_row}"
     outcome_rng = f"Data!{col['outcome']}2:{col['outcome']}{last_row}"
     side_rng = f"Data!{col['side']}2:{col['side']}{last_row}"
+    fair_prob_rng = f"Data!{col['book_fair_prob']}2:{col['book_fair_prob']}{last_row}"
+    kalshi_price_rng = f"Data!{col['kalshi_price']}2:{col['kalshi_price']}{last_row}"
+    # An "underpriced favorite" is a real favorite (fair prob > 50%) priced by
+    # Kalshi as an underdog (price < 50%) — this always implies side="buy_yes".
+    # We're only trading this pattern for now, not the mirror "buy_no" case.
+    fav_cond = f'({fair_prob_rng}>0.5)*({kalshi_price_rng}<0.5)'
 
     summary_ws.cell(row=1, column=1, value="Kalshi Edge Finder — Summary").font = Font(name=FONT_NAME, bold=True, size=14)
 
     label(3, "Total games logged")
     formula(3, f'=COUNTA(Data!{col["scan_timestamp"]}2:{col["scan_timestamp"]}{last_row})')
 
-    label(4, "Signals ≥1% net edge")
-    formula(4, f'=COUNTIF({net_edge_rng},">=0.01")')
+    label(4, "Underpriced-favorite signals ≥1% net edge")
+    formula(4, f'=SUMPRODUCT({fav_cond}*({net_edge_rng}>=0.01))')
 
-    label(5, "Settled signals (outcome known)")
-    formula(5, f'=COUNTIF({outcome_rng},"<>")')
+    label(5, "...of those, settled (outcome known)")
+    formula(5, f'=SUMPRODUCT({fav_cond}*({net_edge_rng}>=0.01)*({outcome_rng}<>""))')
 
-    label(6, 'Wins (side hit, outcome="yes" & side="buy_yes", or outcome="no" & side="buy_no")')
-    formula(6, f'=SUMPRODUCT(({outcome_rng}="yes")*({side_rng}="buy_yes"))'
-               f'+SUMPRODUCT(({outcome_rng}="no")*({side_rng}="buy_no"))')
+    label(6, "...of those, wins (favorite actually won)")
+    formula(6, f'=SUMPRODUCT({fav_cond}*({net_edge_rng}>=0.01)*({outcome_rng}="yes"))')
 
-    label(7, "Win rate on settled signals ≥1% net edge")
+    label(7, "Win rate on settled underpriced-favorite signals")
     formula(
         7,
-        f'=IFERROR(SUMPRODUCT(({outcome_rng}<>"")*({net_edge_rng}>=0.01)*'
-        f'((({outcome_rng}="yes")*({side_rng}="buy_yes"))+(({outcome_rng}="no")*({side_rng}="buy_no"))))'
-        f'/SUMPRODUCT(({outcome_rng}<>"")*({net_edge_rng}>=0.01)*1),"n/a — no settled signals yet")',
+        f'=IFERROR(SUMPRODUCT({fav_cond}*({net_edge_rng}>=0.01)*({outcome_rng}="yes"))'
+        f'/SUMPRODUCT({fav_cond}*({net_edge_rng}>=0.01)*({outcome_rng}<>"")),"n/a — no settled signals yet")',
         pct=True,
     )
 

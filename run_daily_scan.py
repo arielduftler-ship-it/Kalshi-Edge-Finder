@@ -18,7 +18,7 @@ from pathlib import Path
 
 from kalshi_client import KalshiClient
 from odds_client import OddsClient
-from edge_engine import compute_signal
+from edge_engine import compute_signal, is_underpriced_favorite
 import team_aliases
 
 # --- VERIFY THESE against the live Kalshi API before relying on this script ---
@@ -177,8 +177,14 @@ def run_scan():
                     "outcome": "",
                 })
                 rows_written += 1
-                if sig.net_edge >= 0.01:
-                    print(f"SIGNAL  {sig.game_label:30s} {sig.side:8s} net_edge={sig.net_edge:+.3f}")
+                # We're only acting on underpriced favorites right now (a real
+                # favorite that Kalshi's crowd has priced below 50%) — not
+                # every edge the model finds. Every matched game still gets
+                # logged above regardless, so nothing is lost for backtesting;
+                # this just controls what gets flagged as an actionable SIGNAL.
+                if sig.net_edge >= 0.01 and is_underpriced_favorite(sig):
+                    print(f"SIGNAL  {sig.game_label:30s} {sig.side:8s} net_edge={sig.net_edge:+.3f} "
+                          f"(favorite @ {sig.kalshi_price:.2f})")
 
     print(f"Scan complete: {rows_written} rows written to {LOG_PATH}")
 

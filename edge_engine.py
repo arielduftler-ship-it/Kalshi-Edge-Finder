@@ -88,8 +88,26 @@ def compute_signal(
     )
 
 
-def screen_signals(signals: List[Signal], min_net_edge: float = 0.03) -> List[Signal]:
+def is_underpriced_favorite(sig: Signal) -> bool:
+    """True if the sportsbook considers this team a favorite (fair prob > 50%)
+    but Kalshi's market is pricing it as an underdog (price < 50%). This is
+    the specific mispricing pattern we're trading right now — a team that's
+    actually more likely than not to win, priced by Kalshi's crowd as less
+    likely than not. It always implies side == "buy_yes", since fair > mid
+    in this case by definition (raw_edge > 0).
+
+    We're intentionally NOT trading the mirror case (an underdog overpriced
+    by Kalshi, side == "buy_no") yet — narrower scope while validating the
+    core thesis."""
+    return sig.book_fair_prob > 0.5 and sig.kalshi_price < 0.5
+
+
+def screen_signals(signals: List[Signal], min_net_edge: float = 0.03, favorites_only: bool = True) -> List[Signal]:
     """Filter to signals that clear a minimum net edge threshold (in probability
-    points, e.g. 0.03 = 3 percentage points), sorted best-first."""
+    points, e.g. 0.03 = 3 percentage points), sorted best-first. By default
+    also restricts to underpriced favorites (see is_underpriced_favorite) —
+    pass favorites_only=False to see every edge, favorite or underdog."""
     hits = [s for s in signals if s.net_edge >= min_net_edge]
+    if favorites_only:
+        hits = [s for s in hits if is_underpriced_favorite(s)]
     return sorted(hits, key=lambda s: s.net_edge, reverse=True)
