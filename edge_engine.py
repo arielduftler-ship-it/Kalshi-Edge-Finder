@@ -35,6 +35,7 @@ class Signal:
     spread_cost: float       # half the bid-ask spread, same units
     net_edge: float          # raw_edge - fee_cost - spread_cost
     side: str                # "buy_yes" or "buy_no"
+    entry_price: float       # actual price you'd pay (ask if buy_yes, 1-bid if buy_no) — needed for real P&L, distinct from kalshi_price (the midpoint)
 
 
 def compute_signal(
@@ -83,6 +84,7 @@ def compute_signal(
         spread_cost=spread_cost,
         net_edge=net_edge,
         side=side,
+        entry_price=trade_price_cents / 100,
     )
 
 

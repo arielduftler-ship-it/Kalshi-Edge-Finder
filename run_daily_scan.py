@@ -19,6 +19,7 @@ from pathlib import Path
 from kalshi_client import KalshiClient
 from odds_client import OddsClient
 from edge_engine import compute_signal
+import team_aliases
 
 # --- VERIFY THESE against the live Kalshi API before relying on this script ---
 # Check via: KalshiClient().get_events()  (no filter) and inspect the
@@ -32,7 +33,8 @@ SERIES_TICKERS = {
 LOG_PATH = Path(__file__).parent / "data" / "scan_log.csv"
 LOG_FIELDS = [
     "scan_timestamp", "sport", "game_label", "team", "book_fair_prob",
-    "kalshi_price", "raw_edge", "net_edge", "side", "kalshi_ticker",
+    "kalshi_price", "entry_price", "raw_edge", "fee_cost", "spread_cost",
+    "net_edge", "side", "kalshi_ticker", "outcome",
 ]
 
 
@@ -50,17 +52,50 @@ def price_cents(market: dict, side: str) -> int:
     return int(market[side])
 
 
-def match_kalshi_market(team_name: str, markets: list):
-    """Very simple substring match between a team name and Kalshi market
-    titles. Sportsbook team names ('Kansas City Chiefs') and Kalshi market
-    titles won't always line up cleanly — inspect misses and extend this
-    (e.g. a manual alias dict) as you find them."""
-    target = normalize(team_name)
+def match_kalshi_market(team_name: str, sport: str, markets: list):
+    """Matches a team to its Kalshi 'this team wins' market.
+
+    Kalshi's `title` field describes the whole matchup (e.g. "Detroit Tigers
+    at Minnesota Twins") and is IDENTICAL across every per-team market in
+    that event -- searching for a nickname inside `title` matches all of
+    them, not just the one you want. This produced a confirmed bad row in
+    scan_log.csv where "Minnesota Twins" was logged against the Tigers'
+    market by accident.
+
+    Fix: Kalshi's ticker suffix (the segment after the final "-", e.g. "DET"
+    in KXMLBGAME-26SEP021940DETMIN-DET) reliably identifies which team a
+    specific market belongs to. Match on that. Falls back to a disambiguated
+    full-nickname search of `subtitle` (never `title`, and never just the
+    last word) if the team isn't in team_aliases yet or no ticker matches --
+    and prints a warning so a silent/fragile match is never invisible.
+    """
+    alias = team_aliases.lookup(sport, team_name)
+
+    if alias:
+        abbr, nickname_key = alias
+        for m in markets:
+            ticker_suffix = m.get("ticker", "").split("-")[-1].upper()
+            if ticker_suffix == abbr:
+                return m
+        # Abbreviation didn't hit any ticker -- fall through to nickname
+        # search on subtitle only, using the FULL disambiguated nickname.
+        for m in markets:
+            subtitle = normalize(m.get("subtitle", ""))
+            if nickname_key in subtitle:
+                print(f"WARNING: {team_name} matched via subtitle fallback, not ticker suffix "
+                      f"(no market ticker ended in -{abbr}) -- verify this game manually.")
+                return m
+        print(f"WARNING: no Kalshi market found for {team_name} ({sport}) via ticker or subtitle.")
+        return None
+
+    # Team not in team_aliases.py at all -- old, fragile last-word heuristic,
+    # kept only as a last resort. Loudly flagged so it's never silent.
+    print(f"WARNING: '{team_name}' not in team_aliases.py -- falling back to fragile "
+          f"last-word nickname matching. Add this team to team_aliases.py.")
+    target_nickname = normalize(team_name.split()[-1])
     for m in markets:
-        title = normalize(m.get("title", "") + m.get("subtitle", ""))
-        # try last word of team name (usually the nickname, e.g. "Chiefs")
-        nickname = normalize(team_name.split()[-1])
-        if nickname and nickname in title:
+        subtitle = normalize(m.get("subtitle", ""))
+        if target_nickname and target_nickname in subtitle:
             return m
     return None
 
@@ -113,7 +148,7 @@ def run_scan():
                 if not out_home or not out_away:
                     continue
 
-                market = match_kalshi_market(home, kalshi_markets)
+                market = match_kalshi_market(home, sport, kalshi_markets)
                 if not market:
                     continue  # no matching Kalshi market found for this game
 
@@ -133,11 +168,16 @@ def run_scan():
                     "sport": sport, "game_label": sig.game_label, "team": sig.team,
                     "book_fair_prob": round(sig.book_fair_prob, 4),
                     "kalshi_price": round(sig.kalshi_price, 4),
-                    "raw_edge": round(sig.raw_edge, 4), "net_edge": round(sig.net_edge, 4),
+                    "entry_price": round(sig.entry_price, 4),
+                    "raw_edge": round(sig.raw_edge, 4),
+                    "fee_cost": round(sig.fee_cost, 4),
+                    "spread_cost": round(sig.spread_cost, 4),
+                    "net_edge": round(sig.net_edge, 4),
                     "side": sig.side, "kalshi_ticker": sig.kalshi_ticker,
+                    "outcome": "",
                 })
                 rows_written += 1
-                if sig.net_edge >= 0.03:
+                if sig.net_edge >= 0.01:
                     print(f"SIGNAL  {sig.game_label:30s} {sig.side:8s} net_edge={sig.net_edge:+.3f}")
 
     print(f"Scan complete: {rows_written} rows written to {LOG_PATH}")
