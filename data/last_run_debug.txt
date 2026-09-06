@@ -1,5 +1,5 @@
-Run at 2026-09-06T16:00:26.423065+00:00
+Run at 2026-09-06T18:58:46.874779+00:00
 [nfl] 272 games from book, 14 Kalshi events open, 272 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
-[nba] 41 games from book, 1 Kalshi events open, 41 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
+[nba] kalshi events fetch FAILED (check SERIES_TICKERS): 429 Client Error: Too Many Requests for url: https://api.elections.kalshi.com/trade-api/v2/events?status=open&series_ticker=KXNBAGAME
 [mlb] kalshi events fetch FAILED (check SERIES_TICKERS): 429 Client Error: Too Many Requests for url: https://api.elections.kalshi.com/trade-api/v2/events?status=open&series_ticker=KXMLBGAME
 Scan complete: 0 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
