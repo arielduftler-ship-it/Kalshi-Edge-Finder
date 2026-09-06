@@ -127,6 +127,9 @@ def match_kalshi_market(home_team: str, away_team: str, sport: str, market_group
     return None  # no open Kalshi event found for this specific matchup right now
 
 
+DEBUG_PATH = Path(__file__).parent / "data" / "last_run_debug.txt"
+
+
 def run_scan():
     odds_client = OddsClient()  # reads ODDS_API_KEY from env
     kalshi_client = KalshiClient()  # public endpoints, no auth needed
@@ -135,22 +138,27 @@ def run_scan():
     file_exists = LOG_PATH.exists()
 
     rows_written = 0
+    debug_lines = [f"Run at {datetime.now(timezone.utc).isoformat()}"]
+
     with open(LOG_PATH, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=LOG_FIELDS)
         if not file_exists:
             writer.writeheader()
 
         for sport, series_ticker in SERIES_TICKERS.items():
+            counts = {"games_from_book": 0, "no_market_matched": 0, "matched_not_signal": 0, "signals": 0}
+            near_misses = []  # sample of matched-but-not-a-signal games, for visibility
+
             try:
                 games = odds_client.get_odds(sport)
             except Exception as e:
-                print(f"[{sport}] odds fetch failed: {e}")
+                debug_lines.append(f"[{sport}] odds fetch FAILED: {e}")
                 continue
 
             try:
                 events = kalshi_client.get_events(series_ticker=series_ticker)
             except Exception as e:
-                print(f"[{sport}] kalshi events fetch failed (check SERIES_TICKERS): {e}")
+                debug_lines.append(f"[{sport}] kalshi events fetch FAILED (check SERIES_TICKERS): {e}")
                 continue
 
             kalshi_market_groups = []
@@ -161,6 +169,7 @@ def run_scan():
                     continue
 
             for game in games:
+                counts["games_from_book"] += 1
                 home, away = game.get("home_team"), game.get("away_team")
                 books = game.get("bookmakers", [])
                 if not books:
@@ -177,6 +186,7 @@ def run_scan():
 
                 market = match_kalshi_market(home, away, sport, kalshi_market_groups)
                 if not market:
+                    counts["no_market_matched"] += 1
                     continue  # no open Kalshi market for this specific matchup right now
 
                 try:
@@ -187,7 +197,7 @@ def run_scan():
                         kalshi_ticker=market["ticker"],
                     )
                 except Exception as e:
-                    print(f"signal calc failed for {home} vs {away}: {e}")
+                    debug_lines.append(f"[{sport}] signal calc failed for {home} vs {away}: {e}")
                     continue
 
                 # We're only trading underpriced favorites right now (a real
@@ -196,6 +206,12 @@ def run_scan():
                 # Correctly-priced favorites and overpriced underdogs are
                 # skipped entirely so real signals don't get buried.
                 if not (sig.net_edge >= 0.01 and is_underpriced_favorite(sig)):
+                    counts["matched_not_signal"] += 1
+                    if len(near_misses) < 8:
+                        near_misses.append(
+                            f"    {sig.game_label:35s} fair={sig.book_fair_prob:.3f} "
+                            f"kalshi={sig.kalshi_price:.3f} net_edge={sig.net_edge:+.3f}"
+                        )
                     continue
 
                 writer.writerow({
@@ -212,10 +228,24 @@ def run_scan():
                     "outcome": "",
                 })
                 rows_written += 1
+                counts["signals"] += 1
                 print(f"SIGNAL  {sig.game_label:30s} {sig.side:8s} net_edge={sig.net_edge:+.3f} "
                       f"(favorite @ {sig.kalshi_price:.2f})")
 
-    print(f"Scan complete: {rows_written} rows written to {LOG_PATH}")
+            debug_lines.append(
+                f"[{sport}] {counts['games_from_book']} games from book, "
+                f"{len(kalshi_market_groups)} Kalshi events open, "
+                f"{counts['no_market_matched']} had no matching Kalshi event, "
+                f"{counts['matched_not_signal']} matched but weren't underpriced-favorite signals, "
+                f"{counts['signals']} signals."
+            )
+            if near_misses:
+                debug_lines.append(f"[{sport}] sample of matched-but-not-signal games (favorite must have kalshi<0.5):")
+                debug_lines.extend(near_misses)
+
+    debug_lines.append(f"Scan complete: {rows_written} signal row(s) written to {LOG_PATH}")
+    DEBUG_PATH.write_text("\n".join(debug_lines) + "\n")
+    print("\n".join(debug_lines))
 
 
 if __name__ == "__main__":
