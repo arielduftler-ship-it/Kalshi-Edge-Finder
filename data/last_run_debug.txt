@@ -1,5 +1,38 @@
-Run at 2026-09-08T16:02:18.663850+00:00
-[nfl] 272 games from book, 15 Kalshi events open, 272 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
-[nba] kalshi events fetch FAILED (check SERIES_TICKERS): 429 Client Error: Too Many Requests for url: https://api.elections.kalshi.com/trade-api/v2/events?status=open&series_ticker=KXNBAGAME
-[mlb] kalshi events fetch FAILED (check SERIES_TICKERS): 429 Client Error: Too Many Requests for url: https://api.elections.kalshi.com/trade-api/v2/events?status=open&series_ticker=KXMLBGAME
+Run at 2026-09-08T17:06:15.923028+00:00
+[nfl] 272 games from book, 32 Kalshi events open, 272 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
+[nfl] ZERO matches despite 32 open events -- raw sample of up to 3 Kalshi events (to check our title/ticker assumptions):
+    ticker='KXNFLGAME-26SEP09NESEA-SEA' title='New England vs Seattle Pro Football game: Seattle wins?' subtitle='Seattle' yes_sub_title='Seattle'
+    ticker='KXNFLGAME-26SEP09NESEA-NE' title='New England vs Seattle Pro Football game: New England wins?' subtitle='New England' yes_sub_title='New England'
+    ticker='KXNFLGAME-26SEP10SFLAR-SF' title='San Francisco vs Los Angeles R Pro Football game: San Francisco wins?' subtitle=None yes_sub_title='San Francisco'
+    ticker='KXNFLGAME-26SEP10SFLAR-LAR' title='San Francisco vs Los Angeles R Pro Football game: Los Angeles R wins?' subtitle='Los Angeles R' yes_sub_title='Los Angeles R'
+    ticker='KXNFLGAME-26SEP13ATLPIT-PIT' title='Atlanta vs Pittsburgh Pro Football game: Pittsburgh wins?' subtitle=None yes_sub_title='Pittsburgh'
+    ticker='KXNFLGAME-26SEP13ATLPIT-ATL' title='Atlanta vs Pittsburgh Pro Football game: Atlanta wins?' subtitle=None yes_sub_title='Atlanta'
+[nfl] raw sample of up to 3 games from the sportsbook (to compare team-name spelling):
+    home='Seattle Seahawks' away='New England Patriots'
+    home='Los Angeles Rams' away='San Francisco 49ers'
+    home='Pittsburgh Steelers' away='Atlanta Falcons'
+[nba] 41 games from book, 3 Kalshi events open, 41 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
+[nba] ZERO matches despite 3 open events -- raw sample of up to 3 Kalshi events (to check our title/ticker assumptions):
+    ticker='KXNBAGAME-26OCT20BOSDET-DET' title='Detroit wins' subtitle=None yes_sub_title='Detroit'
+    ticker='KXNBAGAME-26OCT20BOSDET-BOS' title='Boston wins' subtitle=None yes_sub_title='Boston'
+    ticker='KXNBAGAME-26OCT20PHINYK-PHI' title='Philadelphia wins' subtitle=None yes_sub_title='Philadelphia'
+    ticker='KXNBAGAME-26OCT20PHINYK-NYK' title='New York wins' subtitle=None yes_sub_title='New York'
+    ticker='KXNBAGAME-26OCT20OKCSAS-SAS' title='San Antonio wins' subtitle=None yes_sub_title='San Antonio'
+    ticker='KXNBAGAME-26OCT20OKCSAS-OKC' title='Oklahoma City wins' subtitle=None yes_sub_title='Oklahoma City'
+[nba] raw sample of up to 3 games from the sportsbook (to compare team-name spelling):
+    home='Detroit Pistons' away='Boston Celtics'
+    home='New York Knicks' away='Philadelphia 76ers'
+    home='San Antonio Spurs' away='Oklahoma City Thunder'
+[mlb] 15 games from book, 35 Kalshi events open, 15 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
+[mlb] ZERO matches despite 35 open events -- raw sample of up to 3 Kalshi events (to check our title/ticker assumptions):
+    ticker='KXMLBGAME-26SEP081835CLEBAL-CLE' title='Cleveland wins' subtitle=None yes_sub_title='Cleveland'
+    ticker='KXMLBGAME-26SEP081835CLEBAL-BAL' title='Baltimore wins' subtitle=None yes_sub_title='Baltimore'
+    ticker='KXMLBGAME-26SEP081840HOUPHI-PHI' title='Philadelphia wins' subtitle=None yes_sub_title='Philadelphia'
+    ticker='KXMLBGAME-26SEP081840HOUPHI-HOU' title='Houston wins' subtitle=None yes_sub_title='Houston'
+    ticker='KXMLBGAME-26SEP081840MINDET-MIN' title='Minnesota wins' subtitle=None yes_sub_title='Minnesota'
+    ticker='KXMLBGAME-26SEP081840MINDET-DET' title='Detroit wins' subtitle=None yes_sub_title='Detroit'
+[mlb] raw sample of up to 3 games from the sportsbook (to compare team-name spelling):
+    home='Baltimore Orioles' away='Cleveland Guardians'
+    home='Detroit Tigers' away='Minnesota Twins'
+    home='Philadelphia Phillies' away='Houston Astros'
 Scan complete: 0 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
