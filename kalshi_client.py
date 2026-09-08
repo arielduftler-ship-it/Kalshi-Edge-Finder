@@ -66,11 +66,22 @@ class KalshiClient:
             "KALSHI-ACCESS-SIGNATURE": base64.b64encode(signature).decode("utf-8"),
         }
 
-    def _get(self, path: str, params: Optional[dict] = None, authenticated: bool = False) -> dict:
+    def _get(self, path: str, params: Optional[dict] = None, authenticated: bool = False, max_retries: int = 4) -> dict:
         url = f"{self.base_url}{path}"
         headers = self._signed_headers("GET", f"/trade-api/v2{path}") if authenticated else {}
-        resp = self.session.get(url, params=params, headers=headers, timeout=15)
-        resp.raise_for_status()
+        for attempt in range(max_retries + 1):
+            resp = self.session.get(url, params=params, headers=headers, timeout=15)
+            if resp.status_code == 429 and attempt < max_retries:
+                # Respect Retry-After if Kalshi sends one; otherwise back off
+                # exponentially. Confirmed in practice: running this workflow
+                # many times a day (get_markets is called once per open event,
+                # so ~15-40 calls per run) trips Kalshi's rate limit.
+                wait = float(resp.headers.get("Retry-After", 2 ** attempt))
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            return resp.json()
+        resp.raise_for_status()  # exhausted retries -- raise the last error
         return resp.json()
 
     # ---------- public market data ----------

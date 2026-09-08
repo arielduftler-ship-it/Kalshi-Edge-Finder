@@ -242,6 +242,20 @@ def run_scan():
             if near_misses:
                 debug_lines.append(f"[{sport}] sample of matched-but-not-signal games (favorite must have kalshi<0.5):")
                 debug_lines.extend(near_misses)
+            if kalshi_market_groups and counts["games_from_book"] > 0 and counts["no_market_matched"] == counts["games_from_book"]:
+                # Every single game failed to match, even though Kalshi events
+                # ARE open -- our assumption about the title/ticker format is
+                # probably wrong. Dump the raw fields so we can see the real
+                # format directly instead of guessing again.
+                debug_lines.append(f"[{sport}] ZERO matches despite {len(kalshi_market_groups)} open events -- "
+                                    f"raw sample of up to 3 Kalshi events (to check our title/ticker assumptions):")
+                for group in kalshi_market_groups[:3]:
+                    for m in group:
+                        debug_lines.append(f"    ticker={m.get('ticker')!r} title={m.get('title')!r} "
+                                            f"subtitle={m.get('subtitle')!r} yes_sub_title={m.get('yes_sub_title')!r}")
+                debug_lines.append(f"[{sport}] raw sample of up to 3 games from the sportsbook (to compare team-name spelling):")
+                for g in games[:3]:
+                    debug_lines.append(f"    home={g.get('home_team')!r} away={g.get('away_team')!r}")
 
     debug_lines.append(f"Scan complete: {rows_written} signal row(s) written to {LOG_PATH}")
     DEBUG_PATH.write_text("\n".join(debug_lines) + "\n")
