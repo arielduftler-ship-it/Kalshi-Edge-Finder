@@ -1,4 +1,4 @@
-Run at 2026-09-08T17:06:15.923028+00:00
+Run at 2026-09-08T19:27:13.346596+00:00
 [nfl] 272 games from book, 32 Kalshi events open, 272 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
 [nfl] ZERO matches despite 32 open events -- raw sample of up to 3 Kalshi events (to check our title/ticker assumptions):
     ticker='KXNFLGAME-26SEP09NESEA-SEA' title='New England vs Seattle Pro Football game: Seattle wins?' subtitle='Seattle' yes_sub_title='Seattle'
@@ -23,8 +23,8 @@ Run at 2026-09-08T17:06:15.923028+00:00
     home='Detroit Pistons' away='Boston Celtics'
     home='New York Knicks' away='Philadelphia 76ers'
     home='San Antonio Spurs' away='Oklahoma City Thunder'
-[mlb] 15 games from book, 35 Kalshi events open, 15 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
-[mlb] ZERO matches despite 35 open events -- raw sample of up to 3 Kalshi events (to check our title/ticker assumptions):
+[mlb] 25 games from book, 36 Kalshi events open, 25 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
+[mlb] ZERO matches despite 36 open events -- raw sample of up to 3 Kalshi events (to check our title/ticker assumptions):
     ticker='KXMLBGAME-26SEP081835CLEBAL-CLE' title='Cleveland wins' subtitle=None yes_sub_title='Cleveland'
     ticker='KXMLBGAME-26SEP081835CLEBAL-BAL' title='Baltimore wins' subtitle=None yes_sub_title='Baltimore'
     ticker='KXMLBGAME-26SEP081840HOUPHI-PHI' title='Philadelphia wins' subtitle=None yes_sub_title='Philadelphia'
