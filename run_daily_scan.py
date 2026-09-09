@@ -55,76 +55,76 @@ def price_cents(market: dict, side: str) -> int:
     return int(market[side])
 
 
-def match_kalshi_market(home_team: str, away_team: str, sport: str, market_groups: list):
+def match_kalshi_market(home_team: str, away_team: str, sport: str, markets: list):
     """Matches a specific game (home_team vs away_team) to its Kalshi
-    'home team wins' market. `market_groups` is a list of lists -- each
-    inner list holds the markets belonging to ONE Kalshi event (so grouping
-    is preserved, not flattened into one big pool).
+    'home team wins' market.
 
-    Three separate bugs, all confirmed against real logged data, are fixed here:
+    History of bugs found in this function, all confirmed against real data:
 
     1. Kalshi's `title` field describes the whole matchup and is IDENTICAL
        across every per-team market in that event -- searching for a
-       nickname inside `title` alone (without also pinning down which
-       market within the event) matches all of them.
+       nickname inside `title` matches all of them, not just one.
 
-    2. Matching on a team's abbreviation ALONE isn't enough either: The Odds
-       API returns a team's entire season schedule, while Kalshi only has
-       ONE open market per team at a time (their next game). Naive
-       abbreviation matching attached every future Chiefs game to whichever
-       single Chiefs market happened to be open (confirmed: four different
-       "@ Kansas City Chiefs" rows all got the same Broncos-game ticker).
+    2. Matching on the home team's abbreviation ALONE isn't enough: The
+       Odds API returns a team's entire season schedule, while Kalshi only
+       has ONE open market per team at a time. Confirmed: four different
+       "@ Kansas City Chiefs" rows all got the same Broncos-game ticker.
 
-    3. The first fix for #2 tried to verify the opponent by checking whether
-       their abbreviation appeared as a substring of the ticker's
-       concatenated date+teams segment (e.g. "26SEP14DENKC"). This backfires
-       when one team's short code is spelled out by the *boundary* between
-       two other teams' codes -- confirmed: "DETBUF" (Lions vs Bills)
-       contains the letters "T"+"B" back to back, which false-matched as
-       "TB" (Buccaneers), silently logging a real Lions/Bills market as a
-       Buccaneers/Lions signal, for the wrong week.
+    3. Tried verifying the opponent by checking if their abbreviation
+       appeared anywhere in the ticker's date+teams segment (e.g.
+       "26SEP14DENKC"). Backfires on letter-boundary coincidences --
+       confirmed: "DETBUF" (Lions vs Bills) contains "T"+"B" back to back,
+       false-matching as "TB" (Buccaneers).
 
-    The fix for all of this: identify the correct EVENT first, using the
-    full, space-separated team names in `title` (e.g. "Detroit Lions at
-    Buffalo Bills") rather than concatenated short codes -- multi-letter
-    nicknames like "buccaneers" and "bills" don't collide the way 2-3 letter
-    abbreviations do. Only once the event is confirmed to be the right
-    matchup do we use the ticker suffix to pick between that event's two
-    markets (which is safe, since there are only ever two, one per team).
+    4. Tried verifying the opponent via the full team name in `title`
+       instead. Also wrong -- confirmed against real Kalshi data dumped
+       from a live run: Kalshi's title/subtitle/yes_sub_title fields use
+       CITY names, not nicknames ("Minnesota wins", "Seattle", "A's" for
+       the Athletics specifically) -- our nickname keys ("twins",
+       "seahawks") never appear in that text at all, so literally 0% of
+       games ever matched across every sport, every day.
+
+    The fix: stop trying to verify the opponent through free-text title
+    fields entirely (they're unreliable in two different ways now). Instead,
+    require the AWAY and HOME abbreviations to appear ADJACENT to each other
+    in the ticker's event segment -- as a single concatenated unit, in
+    either order (e.g. "DENKC" or "KCDEN") -- rather than checking each
+    abbreviation's presence independently. This is what actually rules out
+    the DET/BUF -> "TB" collision (neither "DETTB" nor "TBDET" is a
+    substring of "DETBUF"), while still confirming the whole matchup, not
+    just one side of it. All ticker abbreviations seen in real Kalshi data
+    so far (SEA, NE, DET, MIN, ATH, TOR, STL, SF, LAR, ...) matched
+    team_aliases.py exactly, so that table itself needed no changes.
     """
     home_alias = team_aliases.lookup(sport, home_team)
     away_alias = team_aliases.lookup(sport, away_team)
-    home_nick = home_alias[1] if home_alias else normalize(home_team.split()[-1])
-    home_abbr = home_alias[0] if home_alias else None
-    away_nick = away_alias[1] if away_alias else normalize(away_team.split()[-1])
 
-    if not home_alias:
-        print(f"WARNING: '{home_team}' not in team_aliases.py -- matching on a fragile "
-              f"last-word nickname instead of a verified abbreviation. Add this team to team_aliases.py.")
-
-    for markets in market_groups:
-        if not markets:
-            continue
-        # title is shared across every market in this event -- use it once
-        # to confirm this is the right game before picking a specific market.
-        title = normalize(markets[0].get("title", ""))
-        if home_nick not in title or away_nick not in title:
-            continue  # wrong event entirely
-
-        if home_abbr:
-            for m in markets:
-                if m.get("ticker", "").split("-")[-1].upper() == home_abbr:
-                    return m
-        # Right event, but no ticker suffix matched the known abbreviation
-        # (or we don't have one on file) -- fall back to the per-market
-        # subtitle, which should name just this one team.
+    if home_alias and away_alias:
+        home_abbr, home_nick = home_alias
+        away_abbr, _ = away_alias
+        pair_variants = (away_abbr + home_abbr, home_abbr + away_abbr)
         for m in markets:
-            if home_nick in normalize(m.get("subtitle", "")):
-                print(f"WARNING: {home_team} vs {away_team} matched via subtitle fallback within "
-                      f"the confirmed event, not ticker suffix -- verify this game manually.")
+            parts = m.get("ticker", "").split("-")
+            if len(parts) < 3:
+                continue
+            suffix = parts[-1].upper()
+            event_segment = parts[-2].upper()
+            if suffix == home_abbr and any(pair in event_segment for pair in pair_variants):
                 return m
+        return None  # no open Kalshi market for this specific matchup right now
 
-    return None  # no open Kalshi event found for this specific matchup right now
+    # One or both teams missing from team_aliases.py -- old, fragile
+    # last-word heuristic, kept only as a last resort. Loudly flagged so a
+    # silent/unreliable match is never invisible.
+    missing = home_team if not home_alias else away_team
+    print(f"WARNING: '{missing}' not in team_aliases.py -- matching on a fragile "
+          f"last-word nickname instead of a verified abbreviation. Add this team to team_aliases.py.")
+    target_nickname = normalize(home_team.split()[-1])
+    for m in markets:
+        subtitle = normalize(m.get("subtitle") or m.get("yes_sub_title") or "")
+        if target_nickname and target_nickname in subtitle:
+            return m
+    return None
 
 
 DEBUG_PATH = Path(__file__).parent / "data" / "last_run_debug.txt"
@@ -184,7 +184,7 @@ def run_scan():
                 if not out_home or not out_away:
                     continue
 
-                market = match_kalshi_market(home, away, sport, kalshi_market_groups)
+                market = match_kalshi_market(home, away, sport, [m for group in kalshi_market_groups for m in group])
                 if not market:
                     counts["no_market_matched"] += 1
                     continue  # no open Kalshi market for this specific matchup right now
