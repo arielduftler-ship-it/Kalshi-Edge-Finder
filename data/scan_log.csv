@@ -1,6 +1,1 @@
 scan_timestamp,sport,game_label,team,book_fair_prob,kalshi_price,entry_price,raw_edge,fee_cost,spread_cost,net_edge,side,kalshi_ticker,outcome
-2026-09-09T17:21:06.358063+00:00,nfl,Kansas City Chiefs @ Denver Broncos,Denver Broncos,0.5467,0.435,0.44,0.1117,0.0173,0.005,0.0894,buy_yes,KXNFLGAME-26SEP14DENKC-DEN,
-2026-09-09T17:21:06.358999+00:00,nfl,Minnesota Vikings @ Green Bay Packers,Green Bay Packers,0.7521,0.465,0.47,0.2871,0.0175,0.005,0.2646,buy_yes,KXNFLGAME-26SEP13GBMIN-GB,
-2026-09-09T17:21:06.362751+00:00,nfl,Atlanta Falcons @ Carolina Panthers,Carolina Panthers,0.5739,0.47,0.48,0.1039,0.0175,0.01,0.0764,buy_yes,KXNFLGAME-26SEP20CARATL-CAR,
-2026-09-09T17:21:06.362900+00:00,nfl,Chicago Bears @ Minnesota Vikings,Minnesota Vikings,0.5467,0.4,0.41,0.1467,0.017,0.01,0.1197,buy_yes,KXNFLGAME-26SEP20MINCHI-MIN,
-2026-09-09T17:21:07.878593+00:00,nba,New York Knicks @ Philadelphia 76ers,Philadelphia 76ers,0.5467,0.37,0.38,0.1767,0.0165,0.01,0.1502,buy_yes,KXNBAGAME-26OCT20PHINYK-PHI,
