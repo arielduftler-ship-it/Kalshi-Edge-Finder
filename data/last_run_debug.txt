@@ -1,5 +1,5 @@
-Run at 2026-09-08T19:27:13.346596+00:00
-[nfl] 272 games from book, 32 Kalshi events open, 272 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
+Run at 2026-09-09T17:03:27.589552+00:00
+[nfl] 270 games from book, 32 Kalshi events open, 270 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
 [nfl] ZERO matches despite 32 open events -- raw sample of up to 3 Kalshi events (to check our title/ticker assumptions):
     ticker='KXNFLGAME-26SEP09NESEA-SEA' title='New England vs Seattle Pro Football game: Seattle wins?' subtitle='Seattle' yes_sub_title='Seattle'
     ticker='KXNFLGAME-26SEP09NESEA-NE' title='New England vs Seattle Pro Football game: New England wins?' subtitle='New England' yes_sub_title='New England'
@@ -23,16 +23,16 @@ Run at 2026-09-08T19:27:13.346596+00:00
     home='Detroit Pistons' away='Boston Celtics'
     home='New York Knicks' away='Philadelphia 76ers'
     home='San Antonio Spurs' away='Oklahoma City Thunder'
-[mlb] 25 games from book, 36 Kalshi events open, 25 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
-[mlb] ZERO matches despite 36 open events -- raw sample of up to 3 Kalshi events (to check our title/ticker assumptions):
-    ticker='KXMLBGAME-26SEP081835CLEBAL-CLE' title='Cleveland wins' subtitle=None yes_sub_title='Cleveland'
-    ticker='KXMLBGAME-26SEP081835CLEBAL-BAL' title='Baltimore wins' subtitle=None yes_sub_title='Baltimore'
-    ticker='KXMLBGAME-26SEP081840HOUPHI-PHI' title='Philadelphia wins' subtitle=None yes_sub_title='Philadelphia'
-    ticker='KXMLBGAME-26SEP081840HOUPHI-HOU' title='Houston wins' subtitle=None yes_sub_title='Houston'
-    ticker='KXMLBGAME-26SEP081840MINDET-MIN' title='Minnesota wins' subtitle=None yes_sub_title='Minnesota'
-    ticker='KXMLBGAME-26SEP081840MINDET-DET' title='Detroit wins' subtitle=None yes_sub_title='Detroit'
+[mlb] 15 games from book, 35 Kalshi events open, 15 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
+[mlb] ZERO matches despite 35 open events -- raw sample of up to 3 Kalshi events (to check our title/ticker assumptions):
+    ticker='KXMLBGAME-26SEP091310MINDET-MIN' title='Minnesota wins' subtitle=None yes_sub_title='Minnesota'
+    ticker='KXMLBGAME-26SEP091310MINDET-DET' title='Detroit wins' subtitle=None yes_sub_title='Detroit'
+    ticker='KXMLBGAME-26SEP091505TORATH-TOR' title='Toronto wins' subtitle=None yes_sub_title='Toronto'
+    ticker='KXMLBGAME-26SEP091505TORATH-ATH' title="A's wins" subtitle=None yes_sub_title="A's"
+    ticker='KXMLBGAME-26SEP091545STLSF-STL' title='St. Louis wins' subtitle=None yes_sub_title='St. Louis'
+    ticker='KXMLBGAME-26SEP091545STLSF-SF' title='San Francisco wins' subtitle=None yes_sub_title='San Francisco'
 [mlb] raw sample of up to 3 games from the sportsbook (to compare team-name spelling):
-    home='Baltimore Orioles' away='Cleveland Guardians'
     home='Detroit Tigers' away='Minnesota Twins'
-    home='Philadelphia Phillies' away='Houston Astros'
+    home='Athletics' away='Toronto Blue Jays'
+    home='San Francisco Giants' away='St. Louis Cardinals'
 Scan complete: 0 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
