@@ -1,4 +1,4 @@
-Run at 2026-09-09T17:03:27.589552+00:00
+Run at 2026-09-09T17:10:55.129511+00:00
 [nfl] 270 games from book, 32 Kalshi events open, 270 had no matching Kalshi event, 0 matched but weren't underpriced-favorite signals, 0 signals.
 [nfl] ZERO matches despite 32 open events -- raw sample of up to 3 Kalshi events (to check our title/ticker assumptions):
     ticker='KXNFLGAME-26SEP09NESEA-SEA' title='New England vs Seattle Pro Football game: Seattle wins?' subtitle='Seattle' yes_sub_title='Seattle'
