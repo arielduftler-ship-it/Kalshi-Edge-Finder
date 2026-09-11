@@ -43,7 +43,7 @@ NEAREST_WEEK_DAYS = 8
 
 LOG_PATH = Path(__file__).parent / "data" / "scan_log.csv"
 LOG_FIELDS = [
-    "scan_timestamp", "sport", "game_label", "team", "book_fair_prob",
+    "scan_timestamp", "game_time", "sport", "game_label", "team", "book_fair_prob",
     "kalshi_price", "entry_price", "raw_edge", "fee_cost", "spread_cost",
     "net_edge", "side", "kalshi_ticker", "outcome",
 ]
@@ -291,6 +291,7 @@ def run_scan():
 
                 writer.writerow({
                     "scan_timestamp": datetime.now(timezone.utc).isoformat(),
+                    "game_time": game.get("commence_time", ""),
                     "sport": sport, "game_label": sig.game_label, "team": sig.team,
                     "book_fair_prob": round(sig.book_fair_prob, 4),
                     "kalshi_price": round(sig.kalshi_price, 4),

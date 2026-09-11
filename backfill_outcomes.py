@@ -81,8 +81,14 @@ def backfill():
         if row.get("outcome"):
             continue  # already backfilled
 
-        scan_date = row["scan_timestamp"][:10].replace("-", "")  # 'YYYY-MM-DD...' -> 'YYYYMMDD'
-        result = find_result(espn, row["sport"], scan_date, row["team"])
+        # Use the actual game date when we have it (game_time -- added once
+        # we started scanning up to a week ahead, so scan_timestamp and the
+        # game's real date can now be days apart). Older rows logged before
+        # this column existed fall back to scan_timestamp, which is only
+        # reliable for same-day signals.
+        date_source = row.get("game_time") or row["scan_timestamp"]
+        search_date = date_source[:10].replace("-", "")  # 'YYYY-MM-DD...' -> 'YYYYMMDD'
+        result = find_result(espn, row["sport"], search_date, row["team"])
         if result:
             row["outcome"] = result
             updated += 1
