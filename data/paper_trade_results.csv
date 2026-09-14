@@ -1,4 +1,4 @@
-game_time,sport,game_label,team,side,entry_price,net_edge,contracts,buy_in,outcome,won,profit,cumulative_profit
-2026-09-09,mlb,Tampa Bay Rays @ Atlanta Braves,Atlanta Braves,buy_yes,0.43,0.0778,232,99.76,no,False,-99.76,-99.76
-2026-09-09,mlb,Houston Astros @ Philadelphia Phillies,Philadelphia Phillies,buy_yes,0.31,0.3272,322,99.82,yes,True,222.18,122.42
-,,TOTAL,,,,,,199.58,,,122.42,122.42
+game_time,sport,game_label,team,side,entry_price,net_edge,contracts,buy_in,outcome,won,payout,profit,cumulative_profit
+2026-09-09,mlb,Tampa Bay Rays @ Atlanta Braves,Atlanta Braves,buy_yes,0.43,0.0778,232,99.76,no,False,0.0,-99.76,-99.76
+2026-09-09,mlb,Houston Astros @ Philadelphia Phillies,Philadelphia Phillies,buy_yes,0.31,0.3272,322,99.82,yes,True,322.0,222.18,122.42
+,,TOTAL,,,,,,199.58,,,322.0,122.42,122.42

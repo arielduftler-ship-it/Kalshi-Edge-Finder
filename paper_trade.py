@@ -15,7 +15,9 @@ How a trade is simulated:
     guarantee.
   - Position size = STAKE_PER_TRADE dollars, converted to a whole number of
     contracts at that entry price (Kalshi contracts settle at $1, cost
-    entry_price to buy).
+    entry_price to buy). `profit` is always `payout - buy_in`, spelled out
+    as separate columns so the stake is visibly subtracted, not folded into
+    a single number you have to trust.
   - Only rows with a backfilled `outcome` (run backfill_outcomes.py first)
     are settled; everything else is still pending and skipped.
   - Every signal currently in scan_log.csv is side == "buy_yes" (see
@@ -44,7 +46,7 @@ STAKE_PER_TRADE = 100.0
 
 RESULT_FIELDS = [
     "game_time", "sport", "game_label", "team", "side", "entry_price",
-    "net_edge", "contracts", "buy_in", "outcome", "won", "profit", "cumulative_profit",
+    "net_edge", "contracts", "buy_in", "outcome", "won", "payout", "profit", "cumulative_profit",
 ]
 
 
@@ -78,7 +80,12 @@ def simulate():
             (row["side"] == "buy_yes" and row["outcome"] == "yes")
             or (row["side"] == "buy_no" and row["outcome"] == "no")
         )
-        pnl = contracts * (1 - entry_price) if side_wins else -cost
+        # Winning contracts settle at $1 each; losing contracts settle at $0.
+        # profit is explicitly payout minus the stake you put in (buy_in) --
+        # never just the raw payout -- so a win never looks bigger than it
+        # actually was and a loss always reflects the full stake being gone.
+        payout = contracts * 1.0 if side_wins else 0.0
+        pnl = payout - cost
 
         cumulative_pnl += pnl
         total_cost += cost
@@ -96,6 +103,7 @@ def simulate():
             "buy_in": round(cost, 2),
             "outcome": row["outcome"],
             "won": side_wins,
+            "payout": round(payout, 2),
             "profit": round(pnl, 2),
             "cumulative_profit": round(cumulative_pnl, 2),
         })
@@ -108,10 +116,12 @@ def simulate():
             # A footer TOTAL row so the bottom line is visible at a glance
             # without opening the sheet and scrolling to the last row's
             # cumulative_profit -- both should always agree.
+            total_payout = sum(r["payout"] for r in results)
             writer.writerow({
                 "game_time": "", "sport": "", "game_label": "TOTAL", "team": "",
                 "side": "", "entry_price": "", "net_edge": "", "contracts": "",
                 "buy_in": round(total_cost, 2), "outcome": "", "won": "",
+                "payout": round(total_payout, 2),
                 "profit": round(cumulative_pnl, 2), "cumulative_profit": round(cumulative_pnl, 2),
             })
 

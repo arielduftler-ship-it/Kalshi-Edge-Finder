@@ -40,7 +40,7 @@ OUT_PATH = Path(__file__).parent / "data" / "predictions.xlsx"
 FONT_NAME = "Arial"
 PCT_COLS = {"book_fair_prob", "kalshi_price", "entry_price", "raw_edge", "fee_cost", "spread_cost", "net_edge"}
 PAPER_PCT_COLS = {"entry_price", "net_edge"}
-PAPER_DOLLAR_COLS = {"buy_in", "profit", "cumulative_profit"}
+PAPER_DOLLAR_COLS = {"buy_in", "payout", "profit", "cumulative_profit"}
 
 
 def _write_sheet(ws, fields, rows):
