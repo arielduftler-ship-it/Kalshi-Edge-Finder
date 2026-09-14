@@ -51,13 +51,13 @@ jobs:
         run: python export_to_excel.py
 
       - name: Upload spreadsheet as a downloadable artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: predictions
           path: data/predictions.xlsx
 
       - name: Upload paper trade ledger as a downloadable artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: paper-trade-results
           path: data/paper_trade_results.csv
