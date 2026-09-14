@@ -1,13 +1,17 @@
 """
 export_to_excel.py
 
-Exports data/scan_log.csv into data/predictions.xlsx with three sheets:
+Exports data/scan_log.csv into data/predictions.xlsx with four sheets:
 
   - "Active Signals": only rows with no outcome yet (the game hasn't been
     backfilled as finished) -- this is the "what's live right now" view, so
     settled/old games don't clutter it every time this is regenerated.
   - "Settled History": every row that DOES have an outcome -- the full
     track record, kept for backtesting rather than deleted.
+  - "Paper Trading": simulated buy-in and profit for each settled signal
+    (from data/paper_trade_results.csv, written by paper_trade.py), ending
+    in a bolded TOTAL row for overall profit/loss. Omitted if that file
+    doesn't exist yet -- run paper_trade.py first.
   - "Summary": live Excel formulas (not hardcoded numbers) computing signal
     counts, win rate on settled signals, and how much raw edge collapses to
     net edge after fees/spread -- so the sheet recalculates automatically as
@@ -30,10 +34,13 @@ from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
 
 LOG_PATH = Path(__file__).parent / "data" / "scan_log.csv"
+PAPER_TRADE_PATH = Path(__file__).parent / "data" / "paper_trade_results.csv"
 OUT_PATH = Path(__file__).parent / "data" / "predictions.xlsx"
 
 FONT_NAME = "Arial"
 PCT_COLS = {"book_fair_prob", "kalshi_price", "entry_price", "raw_edge", "fee_cost", "spread_cost", "net_edge"}
+PAPER_PCT_COLS = {"entry_price", "net_edge"}
+PAPER_DOLLAR_COLS = {"buy_in", "profit", "cumulative_profit"}
 
 
 def _write_sheet(ws, fields, rows):
@@ -54,6 +61,41 @@ def _write_sheet(ws, fields, rows):
             cell.font = Font(name=FONT_NAME)
             if field in PCT_COLS:
                 cell.number_format = "0.00%"
+
+    for col_idx, field in enumerate(fields, start=1):
+        letter = get_column_letter(col_idx)
+        ws.column_dimensions[letter].width = max(14, len(field) + 4)
+
+
+def _write_paper_trade_sheet(ws, fields, rows):
+    """Same layout as _write_sheet, but with dollar formatting on buy-in/profit
+    columns and the TOTAL row (written by paper_trade.py as the last row,
+    identified by game_label == 'TOTAL') bolded so it stands out."""
+    for col_idx, field in enumerate(fields, start=1):
+        cell = ws.cell(row=1, column=col_idx, value=field)
+        cell.font = Font(name=FONT_NAME, bold=True)
+
+    for row_idx, row in enumerate(rows, start=2):
+        is_total = row.get("game_label") == "TOTAL"
+        for col_idx, field in enumerate(fields, start=1):
+            raw_value = row.get(field, "")
+            value = raw_value
+            if field == "contracts" and raw_value not in ("", None):
+                try:
+                    value = int(raw_value)
+                except ValueError:
+                    value = raw_value
+            elif field in (PAPER_PCT_COLS | PAPER_DOLLAR_COLS) and raw_value not in ("", None):
+                try:
+                    value = float(raw_value)
+                except ValueError:
+                    value = raw_value
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            cell.font = Font(name=FONT_NAME, bold=is_total)
+            if field in PAPER_PCT_COLS:
+                cell.number_format = "0.00%"
+            elif field in PAPER_DOLLAR_COLS:
+                cell.number_format = "$#,##0.00"
 
     for col_idx, field in enumerate(fields, start=1):
         letter = get_column_letter(col_idx)
@@ -86,6 +128,18 @@ def export():
     # ---------- Settled History sheet (full track record) ----------
     history_ws = wb.create_sheet("Settled History")
     _write_sheet(history_ws, fields, settled_rows)
+
+    # ---------- Paper Trading sheet (simulated buy-in/profit per position) ----------
+    # Reads whatever paper_trade.py last wrote -- run that script first (the
+    # export_excel.yml workflow already does: backfill -> paper_trade -> export)
+    # so this reflects the latest settled outcomes.
+    if PAPER_TRADE_PATH.exists():
+        with open(PAPER_TRADE_PATH, newline="") as f:
+            paper_rows = list(csv.DictReader(f))
+        if paper_rows:
+            paper_fields = list(paper_rows[0].keys())
+            paper_ws = wb.create_sheet("Paper Trading")
+            _write_paper_trade_sheet(paper_ws, paper_fields, paper_rows)
 
     # Summary formulas read across BOTH sheets, so win rate/edge stats always
     # reflect every row ever logged, not just what's currently "Active".

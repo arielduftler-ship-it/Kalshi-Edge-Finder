@@ -44,7 +44,7 @@ STAKE_PER_TRADE = 100.0
 
 RESULT_FIELDS = [
     "game_time", "sport", "game_label", "team", "side", "entry_price",
-    "net_edge", "contracts", "cost", "outcome", "won", "pnl", "cumulative_pnl",
+    "net_edge", "contracts", "buy_in", "outcome", "won", "profit", "cumulative_profit",
 ]
 
 
@@ -93,17 +93,27 @@ def simulate():
             "entry_price": round(entry_price, 4),
             "net_edge": row.get("net_edge", ""),
             "contracts": contracts,
-            "cost": round(cost, 2),
+            "buy_in": round(cost, 2),
             "outcome": row["outcome"],
             "won": side_wins,
-            "pnl": round(pnl, 2),
-            "cumulative_pnl": round(cumulative_pnl, 2),
+            "profit": round(pnl, 2),
+            "cumulative_profit": round(cumulative_pnl, 2),
         })
 
     with open(RESULTS_PATH, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=RESULT_FIELDS)
         writer.writeheader()
         writer.writerows(results)
+        if results:
+            # A footer TOTAL row so the bottom line is visible at a glance
+            # without opening the sheet and scrolling to the last row's
+            # cumulative_profit -- both should always agree.
+            writer.writerow({
+                "game_time": "", "sport": "", "game_label": "TOTAL", "team": "",
+                "side": "", "entry_price": "", "net_edge": "", "contracts": "",
+                "buy_in": round(total_cost, 2), "outcome": "", "won": "",
+                "profit": round(cumulative_pnl, 2), "cumulative_profit": round(cumulative_pnl, 2),
+            })
 
     n = len(results)
     if n == 0:
@@ -116,10 +126,10 @@ def simulate():
 
     print(f"Paper trade results ({n} settled, {pending} still pending):")
     print(f"  Win rate:      {win_rate:.1%} ({wins}/{n})")
-    print(f"  Total staked:  ${total_cost:,.2f}")
-    print(f"  Total P&L:     ${cumulative_pnl:,.2f}")
+    print(f"  Total buy-in:  ${total_cost:,.2f}")
+    print(f"  Total profit:  ${cumulative_pnl:,.2f}")
     print(f"  ROI on stake:  {roi:+.1%}")
-    print(f"  Full ledger written to {RESULTS_PATH}")
+    print(f"  Full ledger (with a TOTAL row) written to {RESULTS_PATH}")
 
 
 if __name__ == "__main__":
