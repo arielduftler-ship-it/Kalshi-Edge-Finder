@@ -305,7 +305,8 @@ def run_scan():
                 })
                 rows_written += 1
                 counts["signals"] += 1
-                print(f"SIGNAL  {sig.game_label:30s} {sig.side:8s} net_edge={sig.net_edge:+.3f} "
+                game_date_str = game_date.strftime("%Y-%m-%d") if game_date else "date unknown"
+                print(f"SIGNAL  {game_date_str}  {sig.game_label:30s} {sig.side:8s} net_edge={sig.net_edge:+.3f} "
                       f"(favorite @ {sig.kalshi_price:.2f})")
 
             debug_lines.append(
