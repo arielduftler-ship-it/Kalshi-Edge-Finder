@@ -1,4 +1,4 @@
-Run at 2026-09-14T18:20:25.795631+00:00
+Run at 2026-09-14T18:22:19.523907+00:00
 [nfl] 17 games from book (0 outside the next 8 days, skipped), 17 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 16 matched but weren't underpriced-favorite signals, 0 signals.
 [nfl] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
     Denver Broncos @ Kansas City Chiefs fair=0.561 kalshi=0.545 net_edge=-0.006
