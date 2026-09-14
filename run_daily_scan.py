@@ -33,13 +33,19 @@ SERIES_TICKERS = {
     "mlb": "KXMLBGAME",
 }
 
-# Only look at each sport's nearest upcoming week, not its whole remaining
-# schedule. The Odds API returns every future game on a team's calendar --
-# without this, we'd also be scanning games weeks or months out that Kalshi
-# doesn't even have a market open for yet (and, worse, in sports where the
-# same two teams play multiple times a season, filtering to the nearest week
-# is what keeps this from ever considering a later rematch by mistake).
-NEAREST_WEEK_DAYS = 8
+# Each sport's window narrows independently, since how quickly lines/prices
+# firm up differs by sport:
+#   - NFL: signals only count if the game is less than 6 days out.
+#   - MLB: day-of only -- MLB odds move fast enough that a mispricing found
+#     even a day ahead may not hold by first pitch, so anything not
+#     happening today is skipped entirely.
+#   - NBA: left at the original nearest-week window pending confirmation
+#     (flag this if a different cutoff should apply here too).
+SPORT_WINDOW_DAYS = {
+    "nfl": 6,
+    "mlb": 0,
+    "nba": 8,
+}
 
 LOG_PATH = Path(__file__).parent / "data" / "scan_log.csv"
 LOG_FIELDS = [
@@ -83,6 +89,18 @@ def parse_ticker_date(event_segment: str, pair_index: int):
         return date(2000 + int(yy), _MONTHS[mon], int(dd))
     except ValueError:
         return None
+
+
+def window_end_for(sport: str, now: datetime):
+    """Per-sport cutoff for how far ahead a game can be and still be scanned.
+    A 0-day window ("day of", used for MLB) means the end of today (UTC),
+    not literally `now` -- otherwise a morning scan would exclude every game
+    scheduled for later that same day. Sports with a positive day count just
+    add that many full days on top of now."""
+    days = SPORT_WINDOW_DAYS.get(sport, 8)
+    if days == 0:
+        return datetime.combine(now.date(), datetime.max.time(), tzinfo=timezone.utc)
+    return now + timedelta(days=days)
 
 
 def price_cents(market: dict, side: str) -> int:
@@ -215,7 +233,7 @@ def run_scan():
                 continue
 
             now = datetime.now(timezone.utc)
-            window_end = now + timedelta(days=NEAREST_WEEK_DAYS)
+            window_end = window_end_for(sport, now)
             games = []
             for g in all_games:
                 d = parse_commence_date(g.get("commence_time", ""))
@@ -311,7 +329,7 @@ def run_scan():
 
             debug_lines.append(
                 f"[{sport}] {len(all_games)} games from book ({counts['outside_window']} outside the "
-                f"next {NEAREST_WEEK_DAYS} days, skipped), {len(kalshi_market_groups)} Kalshi events open, "
+                f"{SPORT_WINDOW_DAYS.get(sport, 8)}-day window, skipped), {len(kalshi_market_groups)} Kalshi events open, "
                 f"{counts['no_market_matched']} had no matching Kalshi event, "
                 f"{counts['date_unverified']} matched but date unverified (ticker date didn't parse), "
                 f"{counts['matched_not_signal']} matched but weren't underpriced-favorite signals, "

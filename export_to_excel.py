@@ -1,13 +1,19 @@
 """
 export_to_excel.py
 
-Exports data/scan_log.csv into data/predictions.xlsx with two sheets:
+Exports data/scan_log.csv into data/predictions.xlsx with three sheets:
 
-  - "Data": every logged row, as-is.
+  - "Active Signals": only rows with no outcome yet (the game hasn't been
+    backfilled as finished) -- this is the "what's live right now" view, so
+    settled/old games don't clutter it every time this is regenerated.
+  - "Settled History": every row that DOES have an outcome -- the full
+    track record, kept for backtesting rather than deleted.
   - "Summary": live Excel formulas (not hardcoded numbers) computing signal
     counts, win rate on settled signals, and how much raw edge collapses to
-    net edge after fees/spread — so the sheet recalculates automatically as
-    new rows get appended by future scans.
+    net edge after fees/spread -- so the sheet recalculates automatically as
+    new rows get appended by future scans. Formulas read from BOTH sheets
+    combined, so the win rate always reflects every settled signal ever
+    logged, not just the ones still shown in "Active Signals".
 
 Uses only Excel-2007-era functions (SUMIFS/COUNTIFS/AVERAGEIFS/IFERROR) so
 formulas evaluate correctly in both Excel and LibreOffice.
@@ -30,6 +36,30 @@ FONT_NAME = "Arial"
 PCT_COLS = {"book_fair_prob", "kalshi_price", "entry_price", "raw_edge", "fee_cost", "spread_cost", "net_edge"}
 
 
+def _write_sheet(ws, fields, rows):
+    for col_idx, field in enumerate(fields, start=1):
+        cell = ws.cell(row=1, column=col_idx, value=field)
+        cell.font = Font(name=FONT_NAME, bold=True)
+
+    for row_idx, row in enumerate(rows, start=2):
+        for col_idx, field in enumerate(fields, start=1):
+            raw_value = row.get(field, "")
+            value = raw_value
+            if field in PCT_COLS and raw_value not in ("", None):
+                try:
+                    value = float(raw_value)
+                except ValueError:
+                    value = raw_value
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            cell.font = Font(name=FONT_NAME)
+            if field in PCT_COLS:
+                cell.number_format = "0.00%"
+
+    for col_idx, field in enumerate(fields, start=1):
+        letter = get_column_letter(col_idx)
+        ws.column_dimensions[letter].width = max(14, len(field) + 4)
+
+
 def export():
     if not LOG_PATH.exists():
         print(f"No log file at {LOG_PATH} yet — run run_daily_scan.py first.")
@@ -43,38 +73,31 @@ def export():
         return
 
     fields = list(rows[0].keys())
-    n = len(rows)
+    active_rows = [r for r in rows if not r.get("outcome")]
+    settled_rows = [r for r in rows if r.get("outcome")]
 
     wb = Workbook()
 
-    # ---------- Data sheet ----------
-    data_ws = wb.active
-    data_ws.title = "Data"
+    # ---------- Active Signals sheet (default view — no settled games) ----------
+    active_ws = wb.active
+    active_ws.title = "Active Signals"
+    _write_sheet(active_ws, fields, active_rows)
 
-    for col_idx, field in enumerate(fields, start=1):
-        cell = data_ws.cell(row=1, column=col_idx, value=field)
-        cell.font = Font(name=FONT_NAME, bold=True)
+    # ---------- Settled History sheet (full track record) ----------
+    history_ws = wb.create_sheet("Settled History")
+    _write_sheet(history_ws, fields, settled_rows)
 
-    for row_idx, row in enumerate(rows, start=2):
-        for col_idx, field in enumerate(fields, start=1):
-            raw_value = row.get(field, "")
-            value = raw_value
-            if field in PCT_COLS and raw_value not in ("", None):
-                try:
-                    value = float(raw_value)
-                except ValueError:
-                    value = raw_value
-            cell = data_ws.cell(row=row_idx, column=col_idx, value=value)
-            cell.font = Font(name=FONT_NAME)
-            if field in PCT_COLS:
-                cell.number_format = "0.00%"
-
-    for col_idx, field in enumerate(fields, start=1):
-        letter = get_column_letter(col_idx)
-        data_ws.column_dimensions[letter].width = max(14, len(field) + 4)
-
+    # Summary formulas read across BOTH sheets, so win rate/edge stats always
+    # reflect every row ever logged, not just what's currently "Active".
     col = {field: get_column_letter(i + 1) for i, field in enumerate(fields)}
-    last_row = n + 1  # +1 for header
+
+    def rng(sheet_title, field, n):
+        return f"'{sheet_title}'!{col[field]}2:{col[field]}{n + 1}" if n > 0 else None
+
+    def combined(field):
+        parts = [p for p in (rng("Active Signals", field, len(active_rows)),
+                              rng("Settled History", field, len(settled_rows))) if p]
+        return parts
 
     # ---------- Summary sheet ----------
     summary_ws = wb.create_sheet("Summary")
@@ -92,58 +115,71 @@ def export():
             cell.number_format = "0.00%"
         return cell
 
-    net_edge_rng = f"Data!{col['net_edge']}2:{col['net_edge']}{last_row}"
-    raw_edge_rng = f"Data!{col['raw_edge']}2:{col['raw_edge']}{last_row}"
-    outcome_rng = f"Data!{col['outcome']}2:{col['outcome']}{last_row}"
-    side_rng = f"Data!{col['side']}2:{col['side']}{last_row}"
-    fair_prob_rng = f"Data!{col['book_fair_prob']}2:{col['book_fair_prob']}{last_row}"
-    kalshi_price_rng = f"Data!{col['kalshi_price']}2:{col['kalshi_price']}{last_row}"
+    def sum_across(func, *field_sets):
+        """Builds e.g. SUMPRODUCT(...) + SUMPRODUCT(...) across both sheets,
+        since a single SUMPRODUCT can't span two separate sheet ranges."""
+        terms = []
+        n_sheets = max(len(fs) for fs in field_sets)
+        for i in range(n_sheets):
+            args = [fs[i] for fs in field_sets]
+            terms.append(f"{func}({','.join(args)})")
+        return "+".join(terms) if terms else "0"
+
+    fair_rngs = combined("book_fair_prob")
+    kalshi_rngs = combined("kalshi_price")
+    net_edge_rngs = combined("net_edge")
+    raw_edge_rngs = combined("raw_edge")
+    outcome_rngs = combined("outcome")
+    scan_ts_rngs = combined("scan_timestamp")
+
     # An "underpriced favorite" is a real favorite (fair prob > 50%) priced by
     # Kalshi as an underdog (price < 50%) — this always implies side="buy_yes".
     # We're only trading this pattern for now, not the mirror "buy_no" case.
-    fav_cond = f'({fair_prob_rng}>0.5)*({kalshi_price_rng}<0.5)'
+    fav_conds = [f"({f}>0.5)*({k}<0.5)" for f, k in zip(fair_rngs, kalshi_rngs)]
 
     summary_ws.cell(row=1, column=1, value="Kalshi Edge Finder — Summary").font = Font(name=FONT_NAME, bold=True, size=14)
 
     label(3, "Total games logged")
-    formula(3, f'=COUNTA(Data!{col["scan_timestamp"]}2:{col["scan_timestamp"]}{last_row})')
+    formula(3, "=" + "+".join(f"COUNTA({r})" for r in scan_ts_rngs) if scan_ts_rngs else 0)
+
+    fav_edge_terms = [f"({fav})*({ne}>=0.01)" for fav, ne in zip(fav_conds, net_edge_rngs)]
 
     label(4, "Underpriced-favorite signals ≥1% net edge")
-    formula(4, f'=SUMPRODUCT({fav_cond}*({net_edge_rng}>=0.01))')
+    formula(4, "=" + "+".join(f"SUMPRODUCT({t})" for t in fav_edge_terms) if fav_edge_terms else 0)
 
     label(5, "...of those, settled (outcome known)")
-    formula(5, f'=SUMPRODUCT({fav_cond}*({net_edge_rng}>=0.01)*({outcome_rng}<>""))')
+    formula(5, "=" + "+".join(f'SUMPRODUCT({t}*({o}<>""))' for t, o in zip(fav_edge_terms, outcome_rngs)) if fav_edge_terms else 0)
 
     label(6, "...of those, wins (favorite actually won)")
-    formula(6, f'=SUMPRODUCT({fav_cond}*({net_edge_rng}>=0.01)*({outcome_rng}="yes"))')
+    formula(6, "=" + "+".join(f'SUMPRODUCT({t}*({o}="yes"))' for t, o in zip(fav_edge_terms, outcome_rngs)) if fav_edge_terms else 0)
+
+    wins_expr = "+".join(f'SUMPRODUCT({t}*({o}="yes"))' for t, o in zip(fav_edge_terms, outcome_rngs)) if fav_edge_terms else "0"
+    settled_expr = "+".join(f'SUMPRODUCT({t}*({o}<>""))' for t, o in zip(fav_edge_terms, outcome_rngs)) if fav_edge_terms else "0"
 
     label(7, "Win rate on settled underpriced-favorite signals")
-    formula(
-        7,
-        f'=IFERROR(SUMPRODUCT({fav_cond}*({net_edge_rng}>=0.01)*({outcome_rng}="yes"))'
-        f'/SUMPRODUCT({fav_cond}*({net_edge_rng}>=0.01)*({outcome_rng}<>"")),"n/a — no settled signals yet")',
-        pct=True,
-    )
+    formula(7, f'=IFERROR(({wins_expr})/({settled_expr}),"n/a — no settled signals yet")', pct=True)
 
     label(9, "Average raw edge (before fees)")
-    formula(9, f'=IFERROR(AVERAGE({raw_edge_rng}),0)', pct=True)
+    formula(9, "=IFERROR(AVERAGE(" + ",".join(raw_edge_rngs) + "),0)" if raw_edge_rngs else 0, pct=True)
 
     label(10, "Average net edge (after fees & spread)")
-    formula(10, f'=IFERROR(AVERAGE({net_edge_rng}),0)', pct=True)
+    formula(10, "=IFERROR(AVERAGE(" + ",".join(net_edge_rngs) + "),0)" if net_edge_rngs else 0, pct=True)
 
     label(11, "Average edge lost to fees/spread")
     formula(11, "=B9-B10", pct=True)
 
     label(13, "Note")
     note = summary_ws.cell(row=13, column=1,
-                            value="Formulas recalculate automatically when this file is opened in Excel or LibreOffice.")
+                            value="Formulas recalculate automatically when this file is opened in Excel or LibreOffice. "
+                                  "'Active Signals' hides settled games — see 'Settled History' for the full track record.")
     note.font = Font(name=FONT_NAME, italic=True, size=9)
     summary_ws.merge_cells(start_row=13, start_column=1, end_row=13, end_column=2)
 
     OUT_PATH.parent.mkdir(exist_ok=True)
     wb.save(OUT_PATH)
-    print(f"Exported {n} row(s) to {OUT_PATH}")
+    print(f"Exported {len(active_rows)} active + {len(settled_rows)} settled row(s) to {OUT_PATH}")
 
 
 if __name__ == "__main__":
     export()
+
