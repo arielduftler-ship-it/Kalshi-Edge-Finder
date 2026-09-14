@@ -35,6 +35,18 @@ jobs:
           git pull --rebase origin main
           git push
 
+      - name: Run paper trade simulation
+        run: python paper_trade.py
+
+      - name: Commit paper trade results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/paper_trade_results.csv
+          git diff --staged --quiet || git commit -m "Paper trade results $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push
+
       - name: Export to Excel
         run: python export_to_excel.py
 
@@ -43,3 +55,9 @@ jobs:
         with:
           name: predictions
           path: data/predictions.xlsx
+
+      - name: Upload paper trade ledger as a downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-trade-results
+          path: data/paper_trade_results.csv
