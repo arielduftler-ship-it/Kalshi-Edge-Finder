@@ -1,22 +1,23 @@
-Run at 2026-09-14T18:39:26.564054+00:00
-[nfl] 17 games from book (7 outside the 6-day window, skipped), 17 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 10 matched but weren't underpriced-favorite signals, 0 signals.
+Run at 2026-09-15T17:29:54.474553+00:00
+[nfl] 16 games from book (1 outside the 6-day window, skipped), 32 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 14 matched but weren't underpriced-favorite signals, 0 signals.
 [nfl] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Denver Broncos @ Kansas City Chiefs fair=0.574 kalshi=0.545 net_edge=+0.007
-    Detroit Lions @ Buffalo Bills       fair=0.686 kalshi=0.655 net_edge=+0.010
-    Carolina Panthers @ Atlanta Falcons fair=0.453 kalshi=0.465 net_edge=-0.011
-    New Orleans Saints @ Baltimore Ravens fair=0.839 kalshi=0.785 net_edge=+0.037
-    Minnesota Vikings @ Chicago Bears   fair=0.722 kalshi=0.685 net_edge=+0.017
-    Cincinnati Bengals @ Houston Texans fair=0.603 kalshi=0.595 net_edge=-0.014
-    Cleveland Browns @ Tampa Bay Buccaneers fair=0.846 kalshi=0.785 net_edge=+0.045
-    Green Bay Packers @ New York Jets   fair=0.270 kalshi=0.355 net_edge=+0.064
+    Detroit Lions @ Buffalo Bills       fair=0.722 kalshi=0.675 net_edge=+0.026
+    Carolina Panthers @ Atlanta Falcons fair=0.381 kalshi=0.445 net_edge=+0.041
+    New Orleans Saints @ Baltimore Ravens fair=0.862 kalshi=0.795 net_edge=+0.051
+    Minnesota Vikings @ Chicago Bears   fair=0.737 kalshi=0.685 net_edge=+0.032
+    Cincinnati Bengals @ Houston Texans fair=0.591 kalshi=0.595 net_edge=-0.018
+    Cleveland Browns @ Tampa Bay Buccaneers fair=0.862 kalshi=0.795 net_edge=+0.051
+    Green Bay Packers @ New York Jets   fair=0.296 kalshi=0.355 net_edge=+0.038
+    Pittsburgh Steelers @ New England Patriots fair=0.745 kalshi=0.685 net_edge=+0.040
 [nba] 41 games from book (41 outside the 8-day window, skipped), 3 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 0 matched but weren't underpriced-favorite signals, 0 signals.
-[mlb] 21 games from book (14 outside the 0-day window, skipped), 43 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 7 matched but weren't underpriced-favorite signals, 0 signals.
+[mlb] 15 games from book (5 outside the 0-day window, skipped), 39 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 10 matched but weren't underpriced-favorite signals, 0 signals.
 [mlb] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Chicago White Sox @ Cleveland Guardians fair=0.618 kalshi=0.595 net_edge=+0.001
-    Los Angeles Dodgers @ Cincinnati Reds fair=0.280 kalshi=0.335 net_edge=+0.035
-    Detroit Tigers @ Toronto Blue Jays  fair=0.584 kalshi=0.565 net_edge=-0.003
-    Baltimore Orioles @ New York Mets   fair=0.541 kalshi=0.535 net_edge=-0.016
-    Atlanta Braves @ Chicago Cubs       fair=0.576 kalshi=0.555 net_edge=-0.001
-    New York Yankees @ Minnesota Twins  fair=0.453 kalshi=0.465 net_edge=-0.010
-    San Francisco Giants @ St. Louis Cardinals fair=0.591 kalshi=0.575 net_edge=-0.006
+    Athletics @ Tampa Bay Rays          fair=0.743 kalshi=0.675 net_edge=+0.048
+    Chicago White Sox @ Cleveland Guardians fair=0.616 kalshi=0.575 net_edge=+0.019
+    Los Angeles Dodgers @ Cincinnati Reds fair=0.254 kalshi=0.315 net_edge=+0.041
+    Milwaukee Brewers @ Pittsburgh Pirates fair=0.280 kalshi=0.325 net_edge=+0.025
+    Philadelphia Phillies @ Washington Nationals fair=0.282 kalshi=0.335 net_edge=+0.032
+    Detroit Tigers @ Toronto Blue Jays  fair=0.576 kalshi=0.565 net_edge=-0.011
+    Baltimore Orioles @ New York Mets   fair=0.573 kalshi=0.555 net_edge=-0.004
+    Atlanta Braves @ Chicago Cubs       fair=0.590 kalshi=0.565 net_edge=+0.003
 Scan complete: 0 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
