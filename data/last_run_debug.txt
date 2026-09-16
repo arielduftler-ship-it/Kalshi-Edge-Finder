@@ -1,4 +1,4 @@
-Run at 2026-09-16T17:30:18.420337+00:00
+Run at 2026-09-16T18:18:21.602863+00:00
 [nfl] 32 games from book (16 outside the 6-day window, skipped), 32 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 15 matched but weren't underpriced-favorite signals, 0 signals.
 [nfl] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
     Detroit Lions @ Buffalo Bills       fair=0.737 kalshi=0.675 net_edge=+0.042
@@ -7,16 +7,16 @@ Run at 2026-09-16T17:30:18.420337+00:00
     Minnesota Vikings @ Chicago Bears   fair=0.722 kalshi=0.675 net_edge=+0.026
     Cincinnati Bengals @ Houston Texans fair=0.603 kalshi=0.585 net_edge=-0.004
     Cleveland Browns @ Tampa Bay Buccaneers fair=0.856 kalshi=0.785 net_edge=+0.055
-    Green Bay Packers @ New York Jets   fair=0.296 kalshi=0.365 net_edge=+0.048
+    Green Bay Packers @ New York Jets   fair=0.314 kalshi=0.375 net_edge=+0.039
     Pittsburgh Steelers @ New England Patriots fair=0.730 kalshi=0.685 net_edge=+0.025
 [nba] 41 games from book (41 outside the 8-day window, skipped), 3 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 0 matched but weren't underpriced-favorite signals, 0 signals.
 [mlb] 15 games from book (5 outside the 0-day window, skipped), 39 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 10 matched but weren't underpriced-favorite signals, 0 signals.
 [mlb] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Chicago White Sox @ Cleveland Guardians fair=0.670 kalshi=0.625 net_edge=+0.024
-    San Francisco Giants @ St. Louis Cardinals fair=0.697 kalshi=0.625 net_edge=+0.051
-    New York Yankees @ Minnesota Twins  fair=0.340 kalshi=0.385 net_edge=+0.024
+    Chicago White Sox @ Cleveland Guardians fair=0.932 kalshi=0.835 net_edge=+0.082
+    San Francisco Giants @ St. Louis Cardinals fair=0.422 kalshi=0.470 net_edge=+0.021
+    New York Yankees @ Minnesota Twins  fair=0.515 kalshi=0.525 net_edge=-0.012
     Detroit Tigers @ Toronto Blue Jays  fair=0.567 kalshi=0.545 net_edge=-0.000
-    Athletics @ Tampa Bay Rays          fair=0.656 kalshi=0.625 net_edge=+0.010
+    Athletics @ Tampa Bay Rays          fair=0.673 kalshi=0.625 net_edge=+0.027
     Los Angeles Dodgers @ Cincinnati Reds fair=0.280 kalshi=0.335 net_edge=+0.035
     Milwaukee Brewers @ Pittsburgh Pirates fair=0.439 kalshi=0.465 net_edge=+0.004
     Philadelphia Phillies @ Washington Nationals fair=0.307 kalshi=0.355 net_edge=+0.027
