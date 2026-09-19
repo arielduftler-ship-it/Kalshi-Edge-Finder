@@ -1,22 +1,23 @@
-Run at 2026-09-18T16:58:31.342699+00:00
-[nfl] 29 games from book (14 outside the 6-day window, skipped), 31 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 14 matched but weren't underpriced-favorite signals, 0 signals.
+Run at 2026-09-19T16:16:43.370194+00:00
+[nfl] 29 games from book (13 outside the 6-day window, skipped), 31 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 15 matched but weren't underpriced-favorite signals, 0 signals.
 [nfl] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Carolina Panthers @ Atlanta Falcons fair=0.397 kalshi=0.425 net_edge=+0.006
-    New Orleans Saints @ Baltimore Ravens fair=0.862 kalshi=0.785 net_edge=+0.061
-    Minnesota Vikings @ Chicago Bears   fair=0.704 kalshi=0.655 net_edge=+0.029
+    Carolina Panthers @ Atlanta Falcons fair=0.381 kalshi=0.425 net_edge=+0.022
+    New Orleans Saints @ Baltimore Ravens fair=0.856 kalshi=0.785 net_edge=+0.055
+    Minnesota Vikings @ Chicago Bears   fair=0.722 kalshi=0.665 net_edge=+0.036
     Cincinnati Bengals @ Houston Texans fair=0.574 kalshi=0.585 net_edge=-0.011
     Cleveland Browns @ Tampa Bay Buccaneers fair=0.879 kalshi=0.785 net_edge=+0.077
     Green Bay Packers @ New York Jets   fair=0.306 kalshi=0.385 net_edge=+0.057
-    Pittsburgh Steelers @ New England Patriots fair=0.722 kalshi=0.685 net_edge=+0.017
-    Philadelphia Eagles @ Tennessee Titans fair=0.191 kalshi=0.245 net_edge=+0.037
+    Pittsburgh Steelers @ New England Patriots fair=0.730 kalshi=0.685 net_edge=+0.025
+    Philadelphia Eagles @ Tennessee Titans fair=0.181 kalshi=0.245 net_edge=+0.046
 [nba] 41 games from book (41 outside the 8-day window, skipped), 3 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 0 matched but weren't underpriced-favorite signals, 0 signals.
-[mlb] 15 games from book (8 outside the 0-day window, skipped), 45 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 7 matched but weren't underpriced-favorite signals, 0 signals.
+[mlb] 15 games from book (5 outside the 0-day window, skipped), 33 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 10 matched but weren't underpriced-favorite signals, 0 signals.
 [mlb] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Chicago Cubs @ Cincinnati Reds      fair=0.427 kalshi=0.435 net_edge=-0.014
-    Kansas City Royals @ Pittsburgh Pirates fair=0.685 kalshi=0.635 net_edge=+0.028
-    Milwaukee Brewers @ Baltimore Orioles fair=0.416 kalshi=0.425 net_edge=-0.013
-    Athletics @ Cleveland Guardians     fair=0.737 kalshi=0.675 net_edge=+0.042
-    Boston Red Sox @ Tampa Bay Rays     fair=0.567 kalshi=0.555 net_edge=-0.010
-    Philadelphia Phillies @ New York Mets fair=0.522 kalshi=0.505 net_edge=-0.005
-    Detroit Tigers @ Chicago White Sox  fair=0.561 kalshi=0.545 net_edge=-0.006
+    Detroit Tigers @ Chicago White Sox  fair=0.553 kalshi=0.535 net_edge=-0.004
+    Milwaukee Brewers @ Baltimore Orioles fair=0.487 kalshi=0.495 net_edge=-0.015
+    Boston Red Sox @ Tampa Bay Rays     fair=0.606 kalshi=0.585 net_edge=-0.001
+    Philadelphia Phillies @ New York Mets fair=0.535 kalshi=0.535 net_edge=-0.022
+    Athletics @ Cleveland Guardians     fair=0.664 kalshi=0.625 net_edge=+0.018
+    Chicago Cubs @ Cincinnati Reds      fair=0.409 kalshi=0.435 net_edge=+0.004
+    Kansas City Royals @ Pittsburgh Pirates fair=0.513 kalshi=0.515 net_edge=-0.020
+    Toronto Blue Jays @ Texas Rangers   fair=0.500 kalshi=0.505 net_edge=-0.018
 Scan complete: 0 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
