@@ -1,23 +1,23 @@
-Run at 2026-09-20T15:37:08.412734+00:00
+Run at 2026-09-20T16:42:20.619086+00:00
 [nfl] 29 games from book (13 outside the 6-day window, skipped), 31 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 15 matched but weren't underpriced-favorite signals, 0 signals.
 [nfl] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Carolina Panthers @ Atlanta Falcons fair=0.381 kalshi=0.425 net_edge=+0.022
+    Carolina Panthers @ Atlanta Falcons fair=0.381 kalshi=0.435 net_edge=+0.032
     New Orleans Saints @ Baltimore Ravens fair=0.846 kalshi=0.785 net_edge=+0.045
-    Minnesota Vikings @ Chicago Bears   fair=0.722 kalshi=0.655 net_edge=+0.046
-    Cincinnati Bengals @ Houston Texans fair=0.603 kalshi=0.585 net_edge=-0.004
     Cleveland Browns @ Tampa Bay Buccaneers fair=0.868 kalshi=0.785 net_edge=+0.067
-    Green Bay Packers @ New York Jets   fair=0.326 kalshi=0.385 net_edge=+0.037
-    Pittsburgh Steelers @ New England Patriots fair=0.737 kalshi=0.675 net_edge=+0.042
-    Philadelphia Eagles @ Tennessee Titans fair=0.181 kalshi=0.245 net_edge=+0.046
+    Green Bay Packers @ New York Jets   fair=0.326 kalshi=0.395 net_edge=+0.047
+    Pittsburgh Steelers @ New England Patriots fair=0.730 kalshi=0.675 net_edge=+0.035
+    Philadelphia Eagles @ Tennessee Titans fair=0.181 kalshi=0.255 net_edge=+0.056
+    Minnesota Vikings @ Chicago Bears   fair=0.722 kalshi=0.655 net_edge=+0.046
+    Cincinnati Bengals @ Houston Texans fair=0.603 kalshi=0.575 net_edge=+0.006
 [nba] 41 games from book (41 outside the 8-day window, skipped), 3 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 0 matched but weren't underpriced-favorite signals, 0 signals.
 [mlb] 15 games from book (0 outside the 0-day window, skipped), 34 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 14 matched but weren't underpriced-favorite signals, 0 signals.
 [mlb] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
     Philadelphia Phillies @ New York Mets fair=0.367 kalshi=0.405 net_edge=+0.017
     Kansas City Royals @ Pittsburgh Pirates fair=0.529 kalshi=0.515 net_edge=-0.009
-    Boston Red Sox @ Tampa Bay Rays     fair=0.616 kalshi=0.585 net_edge=+0.009
+    Boston Red Sox @ Tampa Bay Rays     fair=0.612 kalshi=0.585 net_edge=+0.005
     Athletics @ Cleveland Guardians     fair=0.752 kalshi=0.685 net_edge=+0.047
-    Chicago Cubs @ Cincinnati Reds      fair=0.382 kalshi=0.405 net_edge=+0.001
-    Atlanta Braves @ Houston Astros     fair=0.601 kalshi=0.575 net_edge=+0.004
+    Chicago Cubs @ Cincinnati Reds      fair=0.377 kalshi=0.395 net_edge=-0.004
+    Atlanta Braves @ Houston Astros     fair=0.618 kalshi=0.590 net_edge=+0.001
     Detroit Tigers @ Chicago White Sox  fair=0.529 kalshi=0.515 net_edge=-0.009
     Washington Nationals @ St. Louis Cardinals fair=0.561 kalshi=0.545 net_edge=-0.006
 Scan complete: 0 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
