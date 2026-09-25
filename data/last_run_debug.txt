@@ -1,23 +1,23 @@
-Run at 2026-09-24T17:46:04.858756+00:00
-[nfl] 32 games from book (16 outside the 6-day window, skipped), 32 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 15 matched but weren't underpriced-favorite signals, 0 signals.
+Run at 2026-09-25T17:47:56.078181+00:00
+[nfl] 29 games from book (14 outside the 6-day window, skipped), 31 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 14 matched but weren't underpriced-favorite signals, 0 signals.
 [nfl] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Atlanta Falcons @ Green Bay Packers fair=0.752 kalshi=0.695 net_edge=+0.037
-    Los Angeles Chargers @ Buffalo Bills fair=0.831 kalshi=0.755 net_edge=+0.058
-    Carolina Panthers @ Cleveland Browns fair=0.397 kalshi=0.415 net_edge=-0.004
-    Cincinnati Bengals @ Pittsburgh Steelers fair=0.326 kalshi=0.375 net_edge=+0.028
-    New York Jets @ Detroit Lions       fair=0.800 kalshi=0.725 net_edge=+0.056
-    Houston Texans @ Indianapolis Colts fair=0.453 kalshi=0.455 net_edge=-0.021
-    Kansas City Chiefs @ Miami Dolphins fair=0.078 kalshi=0.145 net_edge=+0.054
-    Tennessee Titans @ New York Giants  fair=0.574 kalshi=0.565 net_edge=-0.013
+    Los Angeles Chargers @ Buffalo Bills fair=0.819 kalshi=0.755 net_edge=+0.046
+    Carolina Panthers @ Cleveland Browns fair=0.397 kalshi=0.425 net_edge=+0.006
+    Cincinnati Bengals @ Pittsburgh Steelers fair=0.344 kalshi=0.375 net_edge=+0.009
+    New York Jets @ Detroit Lions       fair=0.805 kalshi=0.725 net_edge=+0.061
+    Houston Texans @ Indianapolis Colts fair=0.453 kalshi=0.465 net_edge=-0.011
+    Kansas City Chiefs @ Miami Dolphins fair=0.091 kalshi=0.145 net_edge=+0.041
+    Tennessee Titans @ New York Giants  fair=0.561 kalshi=0.555 net_edge=-0.016
+    Seattle Seahawks @ Washington Commanders fair=0.164 kalshi=0.245 net_edge=+0.063
 [nba] 41 games from book (41 outside the 8-day window, skipped), 3 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 0 matched but weren't underpriced-favorite signals, 0 signals.
-[mlb] 12 games from book (3 outside the 0-day window, skipped), 41 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 8 matched but weren't underpriced-favorite signals, 0 signals.
+[mlb] 17 games from book (5 outside the 0-day window, skipped), 45 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 12 matched but weren't underpriced-favorite signals, 0 signals.
 [mlb] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    St. Louis Cardinals @ Pittsburgh Pirates fair=0.587 kalshi=0.575 net_edge=-0.010
-    Chicago White Sox @ Kansas City Royals fair=0.422 kalshi=0.435 net_edge=-0.009
-    Miami Marlins @ Chicago Cubs        fair=0.714 kalshi=0.655 net_edge=+0.038
-    New York Mets @ Texas Rangers       fair=0.567 kalshi=0.545 net_edge=-0.000
-    Milwaukee Brewers @ Philadelphia Phillies fair=0.576 kalshi=0.555 net_edge=-0.001
-    Cleveland Guardians @ Boston Red Sox fair=0.553 kalshi=0.535 net_edge=-0.004
-    Tampa Bay Rays @ New York Yankees   fair=0.613 kalshi=0.585 net_edge=+0.006
-    Cincinnati Reds @ Atlanta Braves    fair=0.727 kalshi=0.675 net_edge=+0.032
+    Chicago Cubs @ Boston Red Sox       fair=0.084 kalshi=0.175 net_edge=+0.077
+    Baltimore Orioles @ New York Yankees fair=0.528 kalshi=0.525 net_edge=-0.019
+    Chicago Cubs @ Boston Red Sox       fair=0.478 kalshi=0.175 net_edge=+0.287
+    Pittsburgh Pirates @ Detroit Tigers fair=0.500 kalshi=0.500 net_edge=-0.028
+    Tampa Bay Rays @ Philadelphia Phillies fair=0.664 kalshi=0.615 net_edge=+0.028
+    New York Mets @ Washington Nationals fair=0.500 kalshi=0.500 net_edge=-0.028
+    Baltimore Orioles @ New York Yankees fair=0.513 kalshi=0.525 net_edge=-0.010
+    Cincinnati Reds @ Toronto Blue Jays fair=0.578 kalshi=0.555 net_edge=+0.001
 Scan complete: 0 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
