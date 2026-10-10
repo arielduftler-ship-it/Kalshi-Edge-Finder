@@ -1,14 +1,14 @@
-Run at 2026-10-09T18:40:40.506429+00:00
-[nfl] 26 games from book (12 outside the 6-day window, skipped), 28 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 13 matched but weren't underpriced-favorite signals, 0 signals.
+Run at 2026-10-10T17:39:52.201622+00:00
+[nfl] 26 games from book (11 outside the 6-day window, skipped), 28 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 14 matched but weren't underpriced-favorite signals, 0 signals.
 [nfl] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Chicago Bears @ Green Bay Packers   fair=0.469 kalshi=0.485 net_edge=-0.006
-    Cincinnati Bengals @ Miami Dolphins fair=0.173 kalshi=0.265 net_edge=+0.074
-    Cleveland Browns @ New York Jets    fair=0.574 kalshi=0.555 net_edge=-0.003
-    Houston Texans @ Tennessee Titans   fair=0.132 kalshi=0.225 net_edge=+0.076
+    Chicago Bears @ Green Bay Packers   fair=0.453 kalshi=0.465 net_edge=-0.011
+    Cincinnati Bengals @ Miami Dolphins fair=0.164 kalshi=0.245 net_edge=+0.063
+    Cleveland Browns @ New York Jets    fair=0.574 kalshi=0.565 net_edge=-0.013
+    Houston Texans @ Tennessee Titans   fair=0.164 kalshi=0.245 net_edge=+0.063
     Indianapolis Colts @ Pittsburgh Steelers fair=0.603 kalshi=0.585 net_edge=-0.004
-    Las Vegas Raiders @ New England Patriots fair=0.694 kalshi=0.635 net_edge=+0.038
-    Minnesota Vikings @ New Orleans Saints fair=0.409 kalshi=0.445 net_edge=+0.014
-    New York Giants @ Washington Commanders fair=0.686 kalshi=0.625 net_edge=+0.039
-[nba] 46 games from book (46 outside the 8-day window, skipped), 33 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 0 matched but weren't underpriced-favorite signals, 0 signals.
+    Las Vegas Raiders @ New England Patriots fair=0.686 kalshi=0.625 net_edge=+0.039
+    Minnesota Vikings @ New Orleans Saints fair=0.409 kalshi=0.435 net_edge=+0.004
+    New York Giants @ Washington Commanders fair=0.648 kalshi=0.625 net_edge=+0.002
+[nba] 46 games from book (46 outside the 8-day window, skipped), 44 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 0 matched but weren't underpriced-favorite signals, 0 signals.
 [mlb] 2 games from book (2 outside the 0-day window, skipped), 5 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 0 matched but weren't underpriced-favorite signals, 0 signals.
 Scan complete: 0 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
