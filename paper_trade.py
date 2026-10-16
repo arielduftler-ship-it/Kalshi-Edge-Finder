@@ -6,27 +6,29 @@ using no real money and no live Kalshi order-placement calls. This exists to
 validate the strategy's actual P&L (not just theoretical net_edge) before
 ever wiring up live execution.
 
+Two sizing strategies run side by side on the same signals:
+
+  FLAT   -- STAKE_PER_TRADE dollars on every signal, no compounding. Answers
+            "does the edge exist?" without sizing noise.
+  KELLY  -- fractional Kelly off a compounding bankroll (see kelly.py).
+            Answers "how would the bankroll actually have grown?" Bets on
+            games settling the same day are sized together off that day's
+            starting bankroll, since you wouldn't know each other's results
+            when placing them.
+
 How a trade is simulated:
   - Fill price = the logged `entry_price` (the ask you'd have paid at scan
-    time for buy_yes, or 1 - bid for buy_no). This assumes you could always
-    get filled at the price seen when the signal was logged -- real slippage
-    between scan time and order time isn't modeled, so live results will run
-    somewhat worse than this. Treat this as a best-case simulation, not a
-    guarantee.
-  - Position size = STAKE_PER_TRADE dollars, converted to a whole number of
-    contracts at that entry price (Kalshi contracts settle at $1, cost
-    entry_price to buy). `profit` is always `payout - buy_in`, spelled out
-    as separate columns so the stake is visibly subtracted, not folded into
-    a single number you have to trust.
+    time for buy_yes, or 1 - bid for buy_no). Real slippage between scan time
+    and order time isn't modeled, so treat this as a best-case simulation.
+  - All-in cost per contract = entry_price + fee_cost (the logged per-contract
+    taker fee). Contracts are always whole numbers (floored).
+  - Winning contracts settle at $1, losing at $0. `profit` is always
+    `payout - buy_in`, spelled out as separate columns.
   - Only rows with a backfilled `outcome` (run backfill_outcomes.py first)
     are settled; everything else is still pending and skipped.
-  - Every signal currently in scan_log.csv is side == "buy_yes" (see
-    is_underpriced_favorite in edge_engine.py -- the "buy_no" mirror case
-    isn't traded yet), but this handles both sides in case that changes.
 
 Recomputes the full report from scratch every run (deterministic given
-scan_log.csv), so there's no separate state file to get out of sync --
-matches how backfill_outcomes.py and run_daily_scan.py already work.
+scan_log.csv), so there's no separate state file to get out of sync.
 
 Run after backfill_outcomes.py:
     python backfill_outcomes.py
@@ -35,19 +37,40 @@ Run after backfill_outcomes.py:
 
 import csv
 import math
+from collections import defaultdict
 from pathlib import Path
+
+from kelly import size_slate
 
 LOG_PATH = Path(__file__).parent / "data" / "scan_log.csv"
 RESULTS_PATH = Path(__file__).parent / "data" / "paper_trade_results.csv"
 
-# Dollar amount "risked" per signal. Purely a simulation knob -- change this
-# to see how P&L would have scaled at a different position size.
+# Flat strategy: dollars risked per signal.
 STAKE_PER_TRADE = 100.0
+# Kelly strategy: starting bankroll that compounds trade to trade.
+STARTING_BANKROLL = 1000.0
 
 RESULT_FIELDS = [
-    "game_time", "sport", "game_label", "team", "side", "entry_price",
-    "net_edge", "contracts", "buy_in", "outcome", "won", "payout", "profit", "cumulative_profit",
+    "game_time", "sport", "game_label", "team", "side", "entry_price", "fee_cost",
+    "book_fair_prob", "net_edge", "outcome", "won",
+    # flat-stake columns
+    "flat_contracts", "flat_buy_in", "flat_payout", "flat_profit", "flat_cumulative_profit",
+    # Kelly columns
+    "full_kelly", "kelly_fraction", "bankroll_before", "kelly_contracts",
+    "kelly_buy_in", "kelly_payout", "kelly_profit", "bankroll_after",
 ]
+
+
+def _side_wins(row) -> bool:
+    return ((row["side"] == "buy_yes" and row["outcome"] == "yes")
+            or (row["side"] == "buy_no" and row["outcome"] == "no"))
+
+
+def _float(row, key, default=0.0) -> float:
+    try:
+        return float(row.get(key) or default)
+    except ValueError:
+        return default
 
 
 def simulate():
@@ -58,72 +81,104 @@ def simulate():
     with open(LOG_PATH, newline="") as f:
         rows = list(csv.DictReader(f))
 
-    settled = [r for r in rows if r.get("outcome")]
-    pending = len(rows) - len(settled)
+    settled = [r for r in rows if r.get("outcome") and _float(r, "entry_price") > 0]
+    pending = len(rows) - len([r for r in rows if r.get("outcome")])
+
+    # Group by settlement date (game_time is either YYYY-MM-DD or full ISO;
+    # the first 10 chars are the date either way), oldest first.
+    slates = defaultdict(list)
+    for r in settled:
+        slates[r.get("game_time", "")[:10]].append(r)
 
     results = []
-    cumulative_pnl = 0.0
-    total_cost = 0.0
+    flat_cum = 0.0
+    flat_cost_total = 0.0
+    kelly_cost_total = 0.0
+    bankroll = STARTING_BANKROLL
     wins = 0
 
-    for row in settled:
-        entry_price = float(row["entry_price"])
-        if entry_price <= 0:
-            continue  # can't size a position off a zero/invalid price
+    for day in sorted(slates):
+        slate = slates[day]
+        bets = [{
+            # For buy_no, the probability that matters is the NO side winning.
+            "p": _float(r, "book_fair_prob") if r["side"] == "buy_yes" else 1 - _float(r, "book_fair_prob"),
+            "price": _float(r, "entry_price"),
+            "fee": _float(r, "fee_cost"),
+        } for r in slate]
+        sizes = size_slate(bets, bankroll)
 
-        contracts = math.floor(STAKE_PER_TRADE / entry_price)
-        if contracts < 1:
-            continue  # stake too small to buy even one contract at this price
+        bankroll_start = bankroll
+        day_pnl = 0.0
 
-        cost = contracts * entry_price
-        side_wins = (
-            (row["side"] == "buy_yes" and row["outcome"] == "yes")
-            or (row["side"] == "buy_no" and row["outcome"] == "no")
-        )
-        # Winning contracts settle at $1 each; losing contracts settle at $0.
-        # profit is explicitly payout minus the stake you put in (buy_in) --
-        # never just the raw payout -- so a win never looks bigger than it
-        # actually was and a loss always reflects the full stake being gone.
-        payout = contracts * 1.0 if side_wins else 0.0
-        pnl = payout - cost
+        for row, bet, size in zip(slate, bets, sizes):
+            won = _side_wins(row)
+            wins += 1 if won else 0
+            cost_per = bet["price"] + bet["fee"]
 
-        cumulative_pnl += pnl
-        total_cost += cost
-        wins += 1 if side_wins else 0
+            # --- flat ---
+            flat_contracts = math.floor(STAKE_PER_TRADE / cost_per)
+            flat_buy_in = flat_contracts * cost_per
+            flat_payout = flat_contracts * 1.0 if won else 0.0
+            flat_profit = flat_payout - flat_buy_in
+            flat_cum += flat_profit
+            flat_cost_total += flat_buy_in
 
-        results.append({
-            "game_time": row.get("game_time", ""),
-            "sport": row["sport"],
-            "game_label": row["game_label"],
-            "team": row["team"],
-            "side": row["side"],
-            "entry_price": round(entry_price, 4),
-            "net_edge": row.get("net_edge", ""),
-            "contracts": contracts,
-            "buy_in": round(cost, 2),
-            "outcome": row["outcome"],
-            "won": side_wins,
-            "payout": round(payout, 2),
-            "profit": round(pnl, 2),
-            "cumulative_profit": round(cumulative_pnl, 2),
-        })
+            # --- Kelly ---
+            kelly_payout = size.contracts * 1.0 if won else 0.0
+            kelly_profit = kelly_payout - size.stake
+            day_pnl += kelly_profit
+            kelly_cost_total += size.stake
+
+            results.append({
+                "game_time": row.get("game_time", ""),
+                "sport": row["sport"],
+                "game_label": row["game_label"],
+                "team": row["team"],
+                "side": row["side"],
+                "entry_price": round(bet["price"], 4),
+                "fee_cost": round(bet["fee"], 4),
+                "book_fair_prob": row.get("book_fair_prob", ""),
+                "net_edge": row.get("net_edge", ""),
+                "outcome": row["outcome"],
+                "won": won,
+                "flat_contracts": flat_contracts,
+                "flat_buy_in": round(flat_buy_in, 2),
+                "flat_payout": round(flat_payout, 2),
+                "flat_profit": round(flat_profit, 2),
+                "flat_cumulative_profit": round(flat_cum, 2),
+                "full_kelly": round(size.full_kelly, 4),
+                "kelly_fraction": round(size.fraction, 4),
+                "bankroll_before": round(bankroll_start, 2),
+                "kelly_contracts": size.contracts,
+                "kelly_buy_in": round(size.stake, 2),
+                "kelly_payout": round(kelly_payout, 2),
+                "kelly_profit": round(kelly_profit, 2),
+                "bankroll_after": "",  # filled in once the whole slate settles
+            })
+
+        bankroll = bankroll_start + day_pnl
+        for r in results[-len(slate):]:
+            r["bankroll_after"] = round(bankroll, 2)
 
     with open(RESULTS_PATH, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=RESULT_FIELDS)
         writer.writeheader()
         writer.writerows(results)
         if results:
-            # A footer TOTAL row so the bottom line is visible at a glance
-            # without opening the sheet and scrolling to the last row's
-            # cumulative_profit -- both should always agree.
-            total_payout = sum(r["payout"] for r in results)
-            writer.writerow({
-                "game_time": "", "sport": "", "game_label": "TOTAL", "team": "",
-                "side": "", "entry_price": "", "net_edge": "", "contracts": "",
-                "buy_in": round(total_cost, 2), "outcome": "", "won": "",
-                "payout": round(total_payout, 2),
-                "profit": round(cumulative_pnl, 2), "cumulative_profit": round(cumulative_pnl, 2),
+            total = {k: "" for k in RESULT_FIELDS}
+            total.update({
+                "game_label": "TOTAL",
+                "flat_buy_in": round(flat_cost_total, 2),
+                "flat_payout": round(sum(r["flat_payout"] for r in results), 2),
+                "flat_profit": round(flat_cum, 2),
+                "flat_cumulative_profit": round(flat_cum, 2),
+                "bankroll_before": round(STARTING_BANKROLL, 2),
+                "kelly_buy_in": round(kelly_cost_total, 2),
+                "kelly_payout": round(sum(r["kelly_payout"] for r in results), 2),
+                "kelly_profit": round(bankroll - STARTING_BANKROLL, 2),
+                "bankroll_after": round(bankroll, 2),
             })
+            writer.writerow(total)
 
     n = len(results)
     if n == 0:
@@ -131,14 +186,12 @@ def simulate():
               f"Run backfill_outcomes.py once those games finish.")
         return
 
-    win_rate = wins / n
-    roi = cumulative_pnl / total_cost if total_cost else 0.0
-
     print(f"Paper trade results ({n} settled, {pending} still pending):")
-    print(f"  Win rate:      {win_rate:.1%} ({wins}/{n})")
-    print(f"  Total buy-in:  ${total_cost:,.2f}")
-    print(f"  Total profit:  ${cumulative_pnl:,.2f}")
-    print(f"  ROI on stake:  {roi:+.1%}")
+    print(f"  Win rate:        {wins / n:.1%} ({wins}/{n})")
+    print(f"  FLAT  (${STAKE_PER_TRADE:,.0f}/trade):  profit ${flat_cum:,.2f}  "
+          f"ROI on stake {flat_cum / flat_cost_total:+.1%}" if flat_cost_total else "")
+    print(f"  KELLY (start ${STARTING_BANKROLL:,.0f}):  ending bankroll ${bankroll:,.2f}  "
+          f"({bankroll / STARTING_BANKROLL - 1:+.1%})")
     print(f"  Full ledger (with a TOTAL row) written to {RESULTS_PATH}")
 
 

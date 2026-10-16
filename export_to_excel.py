@@ -39,8 +39,12 @@ OUT_PATH = Path(__file__).parent / "data" / "predictions.xlsx"
 
 FONT_NAME = "Arial"
 PCT_COLS = {"book_fair_prob", "kalshi_price", "entry_price", "raw_edge", "fee_cost", "spread_cost", "net_edge"}
-PAPER_PCT_COLS = {"entry_price", "net_edge"}
-PAPER_DOLLAR_COLS = {"buy_in", "payout", "profit", "cumulative_profit"}
+PAPER_PCT_COLS = {"entry_price", "fee_cost", "book_fair_prob", "net_edge", "full_kelly", "kelly_fraction"}
+PAPER_DOLLAR_COLS = {
+    "flat_buy_in", "flat_payout", "flat_profit", "flat_cumulative_profit",
+    "bankroll_before", "kelly_buy_in", "kelly_payout", "kelly_profit", "bankroll_after",
+}
+PAPER_INT_COLS = {"flat_contracts", "kelly_contracts"}
 
 
 def _write_sheet(ws, fields, rows):
@@ -80,7 +84,7 @@ def _write_paper_trade_sheet(ws, fields, rows):
         for col_idx, field in enumerate(fields, start=1):
             raw_value = row.get(field, "")
             value = raw_value
-            if field == "contracts" and raw_value not in ("", None):
+            if field in PAPER_INT_COLS and raw_value not in ("", None):
                 try:
                     value = int(raw_value)
                 except ValueError:
