@@ -1,23 +1,23 @@
-Run at 2026-10-16T17:11:23.023655+00:00
-[nfl] 24 games from book (11 outside the 6-day window, skipped), 27 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 12 matched but weren't underpriced-favorite signals, 0 signals.
+Run at 2026-10-17T16:09:48.148182+00:00
+[nfl] 24 games from book (10 outside the 6-day window, skipped), 27 Kalshi events open, 1 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 13 matched but weren't underpriced-favorite signals, 0 signals.
 [nfl] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Chicago Bears @ Atlanta Falcons     fair=0.475 kalshi=0.490 net_edge=-0.013
-    Baltimore Ravens @ Cleveland Browns fair=0.344 kalshi=0.355 net_edge=-0.010
-    Carolina Panthers @ Philadelphia Eagles fair=0.326 kalshi=0.365 net_edge=+0.018
-    Tennessee Titans @ Indianapolis Colts fair=0.836 kalshi=0.745 net_edge=+0.072
+    Chicago Bears @ Atlanta Falcons     fair=0.469 kalshi=0.495 net_edge=+0.004
+    Baltimore Ravens @ Cleveland Browns fair=0.358 kalshi=0.385 net_edge=+0.006
+    Carolina Panthers @ Philadelphia Eagles fair=0.358 kalshi=0.385 net_edge=+0.006
+    Tennessee Titans @ Indianapolis Colts fair=0.827 kalshi=0.745 net_edge=+0.064
     New York Jets @ New England Patriots fair=0.831 kalshi=0.755 net_edge=+0.058
-    New Orleans Saints @ New York Giants fair=0.500 kalshi=0.495 net_edge=-0.018
-    Pittsburgh Steelers @ Tampa Bay Buccaneers fair=0.409 kalshi=0.435 net_edge=+0.004
-    Arizona Cardinals @ Los Angeles Rams fair=0.944 kalshi=0.875 net_edge=+0.057
-[nba] 46 games from book (28 outside the 8-day window, skipped), 28 Kalshi events open, 2 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 16 matched but weren't underpriced-favorite signals, 0 signals.
+    New Orleans Saints @ New York Giants fair=0.500 kalshi=0.505 net_edge=-0.018
+    Pittsburgh Steelers @ Tampa Bay Buccaneers fair=0.397 kalshi=0.435 net_edge=+0.016
+    Arizona Cardinals @ Los Angeles Rams fair=0.940 kalshi=0.875 net_edge=+0.053
+[nba] 46 games from book (28 outside the 8-day window, skipped), 28 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 17 matched but weren't underpriced-favorite signals, 1 signals.
 [nba] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Boston Celtics @ Detroit Pistons    fair=0.506 kalshi=0.495 net_edge=-0.011
-    Philadelphia 76ers @ New York Knicks fair=0.700 kalshi=0.635 net_edge=+0.043
-    Oklahoma City Thunder @ San Antonio Spurs fair=0.567 kalshi=0.555 net_edge=-0.010
-    Milwaukee Bucks @ Washington Wizards fair=0.694 kalshi=0.665 net_edge=+0.008
-    Atlanta Hawks @ Orlando Magic       fair=0.561 kalshi=0.575 net_edge=-0.009
+    Philadelphia 76ers @ New York Knicks fair=0.685 kalshi=0.615 net_edge=+0.048
+    Oklahoma City Thunder @ San Antonio Spurs fair=0.553 kalshi=0.555 net_edge=-0.021
+    Milwaukee Bucks @ Washington Wizards fair=0.694 kalshi=0.655 net_edge=+0.018
+    Atlanta Hawks @ Orlando Magic       fair=0.561 kalshi=0.565 net_edge=-0.019
     Charlotte Hornets @ Brooklyn Nets   fair=0.439 kalshi=0.460 net_edge=-0.006
-    Chicago Bulls @ Toronto Raptors     fair=0.835 kalshi=0.760 net_edge=+0.053
+    Chicago Bulls @ Toronto Raptors     fair=0.835 kalshi=0.755 net_edge=+0.053
     Minnesota Timberwolves @ Miami Heat fair=0.547 kalshi=0.520 net_edge=-0.001
+    Indiana Pacers @ New Orleans Pelicans fair=0.381 kalshi=0.410 net_edge=+0.002
 [mlb] 1 games from book (1 outside the 0-day window, skipped), 2 Kalshi events open, 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 0 matched but weren't underpriced-favorite signals, 0 signals.
-Scan complete: 0 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
+Scan complete: 1 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
