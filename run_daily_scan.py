@@ -1,13 +1,17 @@
 """
 run_daily_scan.py
 
-Pulls live sportsbook odds + Kalshi market prices for NFL/NBA/MLB, and logs a
+Pulls live sportsbook odds + Kalshi market prices for NFL/NBA/NHL, and logs a
 row to data/scan_log.csv only for games that are actual underpriced-favorite
-signals (a real favorite per the sportsbook, priced by Kalshi below 50%,
+signals (a real favorite per the benchmark, priced by Kalshi below 50%,
 clearing a 1% net edge after fees/spread). Every other matched game -- a
 correctly-priced favorite, an overpriced underdog, anything below threshold
 -- is evaluated but not written, so the log only ever contains bets worth
 looking at. Run this daily (see .github/workflows/daily_scan.yml).
+
+The "fair" probability is a sharp-weighted consensus across exchanges and
+sharp-leaning books (see devig.sharp_weighted_consensus). Games where only
+soft books are available are skipped, not scored.
 
 Usage:
     export ODDS_API_KEY=...
@@ -21,30 +25,39 @@ from pathlib import Path
 
 from kalshi_client import KalshiClient
 from odds_client import OddsClient
-from edge_engine import compute_signal, is_underpriced_favorite
+from edge_engine import compute_signal_from_consensus, is_underpriced_favorite
+from devig import sharp_weighted_consensus, book_tier
 import team_aliases
 
 # --- VERIFY THESE against the live Kalshi API before relying on this script ---
 # Check via: KalshiClient().get_events()  (no filter) and inspect the
 # 'series_ticker' field on events that look like sports games.
+#
+# MLB is paused (off-season). To turn it back on, add  "mlb": "KXMLBGAME"  here
+# and  "mlb": 0  to SPORT_WINDOW_DAYS -- every other piece (team aliases, ESPN
+# backfill, Odds API key) is still in place.
 SERIES_TICKERS = {
     "nfl": "KXNFLGAME",
     "nba": "KXNBAGAME",
-    "mlb": "KXMLBGAME",
+    "nhl": "KXNHLGAME",  # confirmed from live Kalshi market pages
 }
 
 # Each sport's window narrows independently, since how quickly lines/prices
 # firm up differs by sport:
-#   - NFL: signals only count if the game is less than 6 days out.
-#   - MLB: day-of only -- MLB odds move fast enough that a mispricing found
-#     even a day ahead may not hold by first pitch, so anything not
-#     happening today is skipped entirely.
-#   - NBA: left at the original nearest-week window pending confirmation
-#     (flag this if a different cutoff should apply here too).
+#   - All three: today and tomorrow only. Lineup news moves lines a lot and
+#     lands late -- NHL starting goalies are usually confirmed on game day,
+#     NBA injury/rest decisions often come out the day of the game, and NFL
+#     teams release final injury reports on Friday. A "gap" found several
+#     days out is often just that uncertainty, not fan bias. Closer to game
+#     time is also when the sharp benchmark is most accurate.
+#     With a daily morning scan, NFL games still get two looks: Thursday
+#     games on Wed + Thu, Sunday games on Sat + Sun morning, Monday games on
+#     Sun + Mon.
+#   - (MLB, paused: was day-of only, 0.)
 SPORT_WINDOW_DAYS = {
-    "nfl": 6,
-    "mlb": 0,
-    "nba": 8,
+    "nfl": 1,
+    "nba": 1,
+    "nhl": 1,
 }
 
 LOG_PATH = Path(__file__).parent / "data" / "scan_log.csv"
@@ -52,6 +65,7 @@ LOG_FIELDS = [
     "scan_timestamp", "game_time", "sport", "game_label", "team", "book_fair_prob",
     "kalshi_price", "entry_price", "raw_edge", "fee_cost", "spread_cost",
     "net_edge", "side", "kalshi_ticker", "outcome",
+    "n_books", "n_sharp", "sharp_share", "books_used",
 ]
 
 _MONTHS = {m: i + 1 for i, m in enumerate(
@@ -93,7 +107,7 @@ def parse_ticker_date(event_segment: str, pair_index: int):
 
 def window_end_for(sport: str, now: datetime):
     """Per-sport cutoff for how far ahead a game can be and still be scanned.
-    A 0-day window ("day of", used for MLB) means the end of today (UTC),
+    A 0-day window ("day of", formerly used for MLB) means the end of today (UTC),
     not literally `now` -- otherwise a morning scan would exclude every game
     scheduled for later that same day. Sports with a positive day count just
     add that many full days on top of now."""
@@ -206,11 +220,44 @@ def match_kalshi_market(home_team: str, away_team: str, sport: str, game_date, m
 DEBUG_PATH = Path(__file__).parent / "data" / "last_run_debug.txt"
 
 
+def load_logged_tickers() -> set:
+    """Kalshi tickers already in scan_log.csv. Each game is logged only ONCE,
+    at its first signal: a game that keeps showing a gap on later scans is
+    still one bet, not several. Without this, a game scanned on two days
+    would count as two separate trades in paper trading."""
+    if not LOG_PATH.exists():
+        return set()
+    with open(LOG_PATH, newline="") as f:
+        return {r.get("kalshi_ticker", "") for r in csv.DictReader(f)} - {""}
+
+
+def upgrade_log_header():
+    """If scan_log.csv was written with an older column list, rewrite it with
+    the current LOG_FIELDS (new columns left blank for old rows). Without
+    this, appending rows with new columns under an old header would shift
+    every value into the wrong column."""
+    if not LOG_PATH.exists():
+        return
+    with open(LOG_PATH, newline="") as f:
+        reader = csv.DictReader(f)
+        header = reader.fieldnames or []
+        rows = list(reader)
+    if header == LOG_FIELDS:
+        return
+    with open(LOG_PATH, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=LOG_FIELDS, extrasaction="ignore")
+        writer.writeheader()
+        for r in rows:
+            writer.writerow({k: r.get(k, "") for k in LOG_FIELDS})
+
+
 def run_scan():
     odds_client = OddsClient()  # reads ODDS_API_KEY from env
     kalshi_client = KalshiClient()  # public endpoints, no auth needed
 
     LOG_PATH.parent.mkdir(exist_ok=True)
+    upgrade_log_header()
+    logged_tickers = load_logged_tickers()
     file_exists = LOG_PATH.exists()
 
     rows_written = 0
@@ -223,7 +270,10 @@ def run_scan():
 
         for sport, series_ticker in SERIES_TICKERS.items():
             counts = {"games_from_book": 0, "outside_window": 0, "no_market_matched": 0,
-                      "date_unverified": 0, "matched_not_signal": 0, "signals": 0}
+                      "no_sharp_benchmark": 0, "date_unverified": 0, "matched_not_signal": 0,
+                      "already_logged": 0, "signals": 0}
+            books_seen = {}    # bookmaker key -> how many in-window games it quoted
+            books_dropped = {} # "book: reason" -> count, to spot stale/thin exchanges
             near_misses = []  # sample of matched-but-not-a-signal games, for visibility
 
             try:
@@ -243,6 +293,9 @@ def run_scan():
                 if now - timedelta(hours=12) <= commence_dt <= window_end:
                     games.append(g)
             counts["outside_window"] = len(all_games) - len(games)
+            if odds_client.last_requests_remaining is not None:
+                debug_lines.append(f"[{sport}] Odds API credits: {odds_client.last_requests_used} used, "
+                                   f"{odds_client.last_requests_remaining} remaining this month")
 
             try:
                 events = kalshi_client.get_events(series_ticker=series_ticker)
@@ -263,16 +316,18 @@ def run_scan():
                 home, away = game.get("home_team"), game.get("away_team")
                 game_date = parse_commence_date(game.get("commence_time", ""))
                 books = game.get("bookmakers", [])
-                if not books:
-                    continue
-                book = books[0]  # first available book; consider filtering to a specific sharp book
-                h2h = next((m for m in book.get("markets", []) if m["key"] == "h2h"), None)
-                if not h2h or len(h2h.get("outcomes", [])) != 2:
-                    continue
+                for b in books:
+                    books_seen[b.get("key", "?")] = books_seen.get(b.get("key", "?"), 0) + 1
 
-                out_home = next((o for o in h2h["outcomes"] if o["name"] == home), None)
-                out_away = next((o for o in h2h["outcomes"] if o["name"] == away), None)
-                if not out_home or not out_away:
+                consensus = sharp_weighted_consensus(books, home, away)
+                if consensus is not None:
+                    for bk, reason in consensus.dropped.items():
+                        tag = f"{bk}: {reason}"
+                        books_dropped[tag] = books_dropped.get(tag, 0) + 1
+                if consensus is None:
+                    # No exchange or sharp book had a usable line -- a soft-only
+                    # benchmark would defeat the point, so skip the game.
+                    counts["no_sharp_benchmark"] += 1
                     continue
 
                 market, date_verified = match_kalshi_market(home, away, sport, game_date, all_markets)
@@ -283,9 +338,8 @@ def run_scan():
                     counts["date_unverified"] += 1
 
                 try:
-                    sig = compute_signal(
-                        game_label=f"{away} @ {home}", team=home,
-                        book_odds_a=out_home["price"], book_odds_b=out_away["price"],
+                    sig = compute_signal_from_consensus(
+                        game_label=f"{away} @ {home}", team=home, consensus=consensus,
                         kalshi_yes_bid=price_cents(market, "yes_bid"), kalshi_yes_ask=price_cents(market, "yes_ask"),
                         kalshi_ticker=market["ticker"],
                     )
@@ -303,8 +357,15 @@ def run_scan():
                     if len(near_misses) < 8:
                         near_misses.append(
                             f"    {sig.game_label:35s} fair={sig.book_fair_prob:.3f} "
-                            f"kalshi={sig.kalshi_price:.3f} net_edge={sig.net_edge:+.3f}"
+                            f"kalshi={sig.kalshi_price:.3f} net_edge={sig.net_edge:+.3f} "
+                            f"books={sig.n_books} (sharp={sig.n_sharp}, {sig.sharp_share:.0%} of weight)"
                         )
+                    continue
+
+                if sig.kalshi_ticker in logged_tickers:
+                    # Still a signal, but this game was already logged on an
+                    # earlier scan -- don't count the same bet twice.
+                    counts["already_logged"] += 1
                     continue
 
                 writer.writerow({
@@ -320,7 +381,12 @@ def run_scan():
                     "net_edge": round(sig.net_edge, 4),
                     "side": sig.side, "kalshi_ticker": sig.kalshi_ticker,
                     "outcome": "",
+                    "n_books": sig.n_books,
+                    "n_sharp": sig.n_sharp,
+                    "sharp_share": round(sig.sharp_share, 3),
+                    "books_used": sig.books_used,
                 })
+                logged_tickers.add(sig.kalshi_ticker)
                 rows_written += 1
                 counts["signals"] += 1
                 game_date_str = game_date.strftime("%Y-%m-%d") if game_date else "date unknown"
@@ -330,11 +396,21 @@ def run_scan():
             debug_lines.append(
                 f"[{sport}] {len(all_games)} games from book ({counts['outside_window']} outside the "
                 f"{SPORT_WINDOW_DAYS.get(sport, 8)}-day window, skipped), {len(kalshi_market_groups)} Kalshi events open, "
+                f"{counts['no_sharp_benchmark']} skipped (no exchange/sharp book quoted them), "
                 f"{counts['no_market_matched']} had no matching Kalshi event, "
                 f"{counts['date_unverified']} matched but date unverified (ticker date didn't parse), "
                 f"{counts['matched_not_signal']} matched but weren't underpriced-favorite signals, "
+                f"{counts['already_logged']} were signals already logged on an earlier scan, "
                 f"{counts['signals']} signals."
             )
+            if books_seen:
+                seen_str = ", ".join(f"{k}({book_tier(k)[0]})={v}" for k, v in
+                                     sorted(books_seen.items(), key=lambda kv: -kv[1]))
+                debug_lines.append(f"[{sport}] books quoting in-window games: {seen_str}")
+            if books_dropped:
+                top = sorted(books_dropped.items(), key=lambda kv: -kv[1])[:8]
+                debug_lines.append(f"[{sport}] lines dropped by quality filters: " +
+                                   ", ".join(f"{k} x{v}" for k, v in top))
             if near_misses:
                 debug_lines.append(f"[{sport}] sample of matched-but-not-signal games (favorite must have kalshi<0.5):")
                 debug_lines.extend(near_misses)

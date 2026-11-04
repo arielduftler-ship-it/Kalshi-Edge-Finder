@@ -147,7 +147,52 @@ MLB = {
     "Washington Nationals": ("WSH", "nationals"),
 }
 
-ALL_TEAMS = {"nfl": NFL, "nba": NBA, "mlb": MLB}
+# NHL codes follow Kalshi's KXNHLGAME tickers (e.g. KXNHLGAME-25DEC10LASEA-SEA,
+# KXNHLGAME-26JAN06CBJSJ-SJ). Note Kalshi uses 2-letter codes for LA, NJ, SJ
+# and TB. Verified against Kalshi's NHL pages: everything except ANA, CHI and
+# WPG, which follow the standard NHL convention -- if one of those three never
+# matches, check last_run_debug.txt for the real ticker.
+# Some names are listed twice because data sources spell them differently
+# (accented "Montréal", "St Louis" without the period, Utah's old name).
+NHL = {
+    "Anaheim Ducks": ("ANA", "ducks"),
+    "Boston Bruins": ("BOS", "bruins"),
+    "Buffalo Sabres": ("BUF", "sabres"),
+    "Calgary Flames": ("CGY", "flames"),
+    "Carolina Hurricanes": ("CAR", "hurricanes"),
+    "Chicago Blackhawks": ("CHI", "blackhawks"),
+    "Colorado Avalanche": ("COL", "avalanche"),
+    "Columbus Blue Jackets": ("CBJ", "bluejackets"),
+    "Dallas Stars": ("DAL", "stars"),
+    "Detroit Red Wings": ("DET", "redwings"),
+    "Edmonton Oilers": ("EDM", "oilers"),
+    "Florida Panthers": ("FLA", "panthers"),
+    "Los Angeles Kings": ("LA", "kings"),
+    "Minnesota Wild": ("MIN", "wild"),
+    "Montréal Canadiens": ("MTL", "canadiens"),
+    "Montreal Canadiens": ("MTL", "canadiens"),
+    "Nashville Predators": ("NSH", "predators"),
+    "New Jersey Devils": ("NJ", "devils"),
+    "New York Islanders": ("NYI", "islanders"),
+    "New York Rangers": ("NYR", "rangers"),
+    "Ottawa Senators": ("OTT", "senators"),
+    "Philadelphia Flyers": ("PHI", "flyers"),
+    "Pittsburgh Penguins": ("PIT", "penguins"),
+    "San Jose Sharks": ("SJ", "sharks"),
+    "Seattle Kraken": ("SEA", "kraken"),
+    "St. Louis Blues": ("STL", "blues"),
+    "St Louis Blues": ("STL", "blues"),
+    "Tampa Bay Lightning": ("TB", "lightning"),
+    "Toronto Maple Leafs": ("TOR", "mapleleafs"),
+    "Utah Mammoth": ("UTA", "utah"),
+    "Utah Hockey Club": ("UTA", "utah"),
+    "Vancouver Canucks": ("VAN", "canucks"),
+    "Vegas Golden Knights": ("VGK", "goldenknights"),
+    "Washington Capitals": ("WSH", "capitals"),
+    "Winnipeg Jets": ("WPG", "jets"),
+}
+
+ALL_TEAMS = {"nfl": NFL, "nba": NBA, "mlb": MLB, "nhl": NHL}
 
 
 def lookup(sport: str, team_name: str) -> Optional[Tuple[str, str]]:

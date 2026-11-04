@@ -14,6 +14,7 @@ SPORT_PATHS = {
     "nfl": "football/nfl",
     "nba": "basketball/nba",
     "mlb": "baseball/mlb",
+    "nhl": "hockey/nhl",
 }
 
 
