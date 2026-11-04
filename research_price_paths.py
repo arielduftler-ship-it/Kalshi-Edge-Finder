@@ -536,7 +536,8 @@ def analyse(rows):
     # 2. dip rate vs fair bound
     md += ["## 2. Do prices dip more often than a fair market would?", "",
            "Fair bound = average of (1 − p0) / (1 − (p0 − dip)). Real rates clearly ABOVE the bound mean overreaction. "
-           "Rates below it are expected even in a fair market, because prices jump and minute closes miss some lows.", "",
+           "Rates below it are expected even in a fair market, because prices jump and minute closes miss some lows. "
+           "A losing team counts as reaching every level, because it settles at $0 even when the last quote was higher.", "",
            "| Sport | Side | Dip | Games | Actual dip rate (95% CI) | Fair bound | Actual − bound |", "|---|---|---|---|---|---|---|"]
     test2 = []
     for (s, side), g in groups.items():
@@ -545,7 +546,11 @@ def analyse(rows):
             n = len(g)
             if n < 20:
                 continue
-            hits = sum(r[f"hit_{k}"] for r in g)
+            # A team that lost settles at $0, so it "reached" every positive level
+            # even if Kalshi stopped quoting before the price got there (close games
+            # often jump from ~30c to 0 at the buzzer). The fair bound counts those,
+            # so the actual rate must too, or the test is biased low.
+            hits = sum(1 for r in g if r[f"hit_{k}"] or (not r["won"] and r["p0"] - d > 0))
             lo, hi = wilson(hits, n)
             bound = mean([fair_hit_prob(r["p0"], d) for r in g])
             test2.append((s, side, d, hits / n, lo, hi, bound))
