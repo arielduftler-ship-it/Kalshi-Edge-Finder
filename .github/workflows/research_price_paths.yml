@@ -1,0 +1,61 @@
+name: Research - In-Game Price Paths
+
+on:
+  workflow_dispatch:
+    inputs:
+      sports:
+        description: "Comma-separated sports (nba, nhl, nfl)"
+        default: "nba,nhl,nfl"
+        required: false
+      max_games_per_sport:
+        description: "Random sample size per sport (more = slower; ~4 Kalshi calls per game)"
+        default: "500"
+        required: false
+      lookback_days:
+        description: "How far back to pull finished games"
+        default: "450"
+        required: false
+
+concurrency:
+  group: research-price-paths
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run price-path research
+        env:
+          RESEARCH_SPORTS: ${{ inputs.sports }}
+          MAX_GAMES_PER_SPORT: ${{ inputs.max_games_per_sport }}
+          LOOKBACK_DAYS: ${{ inputs.lookback_days }}
+        run: python research_price_paths.py
+
+      - name: Commit summary and charts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/research/research_summary.md data/research/market_summary.csv data/research/debug.txt data/research/*.png || true
+          git diff --staged --quiet || git commit -m "Price-path research $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push
+
+      - name: Upload minute-by-minute paths as a downloadable artifact
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: research-price-paths
+          path: data/research/
