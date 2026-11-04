@@ -1,13 +1,13 @@
 # In-game Kalshi price paths: dip and snap-back research
 
-Generated 2026-11-04 19:33 UTC. Sports: nba. Up to 30 games per sport, lookback 450 days, seed 42.
+Generated 2026-11-04 19:38 UTC. Sports: nba. Up to 30 games per sport, lookback 450 days, seed 42.
 
 ## Sample
 
 | Sport | Games | Median in-game minutes | Median opening spread |
 |---|---|---|---|
-| nba | 30 | 146 | 0.0¢ |
-| all | 30 | 146 | 0.0¢ |
+| nba | 30 | 139 | 1.0¢ |
+| all | 30 | 139 | 1.0¢ |
 
 ## 1. How far do prices move below the opening price?
 
@@ -15,20 +15,23 @@ Generated 2026-11-04 19:33 UTC. Sports: nba. Up to 30 games per sport, lookback 
 
 | Sport | Side | Games | Never below open | Dip ≥3 | Dip ≥5 | Dip ≥10 | Dip ≥15 | Winners: never below | Winners: dip ≥5 | Winners: dip ≥10 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| nba | favorite | 30 | 86.7% | 13.3% | 13.3% | 13.3% | 10.0% | 88.2% | 11.8% | 11.8% |
-| nba | underdog | 30 | 90.0% | 6.7% | 6.7% | 6.7% | 6.7% | 92.3% | 0.0% | 0.0% |
-| all | favorite | 30 | 86.7% | 13.3% | 13.3% | 13.3% | 10.0% | 88.2% | 11.8% | 11.8% |
-| all | underdog | 30 | 90.0% | 6.7% | 6.7% | 6.7% | 6.7% | 92.3% | 0.0% | 0.0% |
+| nba | favorite | 30 | 13.3% | 80.0% | 73.3% | 73.3% | 66.7% | 23.5% | 52.9% | 52.9% |
+| nba | underdog | 30 | 6.7% | 86.7% | 80.0% | 63.3% | 53.3% | 15.4% | 61.5% | 38.5% |
+| all | favorite | 30 | 13.3% | 80.0% | 73.3% | 73.3% | 66.7% | 23.5% | 52.9% | 52.9% |
+| all | underdog | 30 | 6.7% | 86.7% | 80.0% | 63.3% | 53.3% | 15.4% | 61.5% | 38.5% |
 
 ### By opening price (all sports, one market per game per side)
 
 | Opening price | Games | Win rate | Never below open | Dip ≥5 | Dip ≥10 | Winners: dip ≥5 |
 |---|---|---|---|---|---|---|
-| 0–20¢ | 52 | 50.0% | 100.0% | 0.0% | 0.0% | 0.0% |
-| 30–40¢ | 2 | 50.0% | 50.0% | 50.0% | 50.0% | 0.0% |
-| 40–50¢ | 2 | 50.0% | 0.0% | 50.0% | 50.0% | 0.0% |
-| 50–60¢ | 2 | 50.0% | 0.0% | 100.0% | 100.0% | 100.0% |
-| 60–70¢ | 2 | 50.0% | 0.0% | 100.0% | 100.0% | 100.0% |
+| 0–20¢ | 6 | 16.7% | 0.0% | 83.3% | 33.3% | 100.0% |
+| 20–30¢ | 6 | 16.7% | 0.0% | 83.3% | 83.3% | 0.0% |
+| 30–40¢ | 7 | 57.1% | 14.3% | 85.7% | 85.7% | 75.0% |
+| 40–50¢ | 11 | 63.6% | 9.1% | 72.7% | 54.5% | 57.1% |
+| 50–60¢ | 11 | 36.4% | 18.2% | 81.8% | 81.8% | 50.0% |
+| 60–70¢ | 6 | 50.0% | 0.0% | 100.0% | 100.0% | 100.0% |
+| 70–80¢ | 6 | 66.7% | 0.0% | 83.3% | 83.3% | 75.0% |
+| 80–100¢ | 7 | 85.7% | 28.6% | 28.6% | 28.6% | 16.7% |
 
 ## 2. Do prices dip more often than a fair market would?
 
@@ -36,26 +39,26 @@ Fair bound = average of (1 − p0) / (1 − (p0 − dip)). Real rates clearly AB
 
 | Sport | Side | Dip | Games | Actual dip rate (95% CI) | Fair bound | Actual − bound |
 |---|---|---|---|---|---|---|
-| nba | favorite | 3¢ | 30 | 13.3% (5.3%–29.7%) | 12.4% | +1.0 pts |
-| nba | favorite | 5¢ | 30 | 13.3% (5.3%–29.7%) | 11.8% | +1.5 pts |
-| nba | favorite | 10¢ | 30 | 13.3% (5.3%–29.7%) | 10.6% | +2.7 pts |
-| nba | favorite | 15¢ | 30 | 10.0% (3.5%–25.6%) | 9.6% | +0.4 pts |
-| nba | favorite | 20¢ | 30 | 6.7% (1.8%–21.3%) | 8.8% | -2.2 pts |
-| nba | underdog | 3¢ | 30 | 6.7% (1.8%–21.3%) | 12.7% | -6.0 pts |
-| nba | underdog | 5¢ | 30 | 6.7% (1.8%–21.3%) | 12.3% | -5.6 pts |
-| nba | underdog | 10¢ | 30 | 6.7% (1.8%–21.3%) | 11.4% | -4.7 pts |
-| nba | underdog | 15¢ | 30 | 6.7% (1.8%–21.3%) | 10.6% | -3.9 pts |
-| nba | underdog | 20¢ | 30 | 6.7% (1.8%–21.3%) | 9.9% | -3.3 pts |
-| all | favorite | 3¢ | 30 | 13.3% (5.3%–29.7%) | 12.4% | +1.0 pts |
-| all | favorite | 5¢ | 30 | 13.3% (5.3%–29.7%) | 11.8% | +1.5 pts |
-| all | favorite | 10¢ | 30 | 13.3% (5.3%–29.7%) | 10.6% | +2.7 pts |
-| all | favorite | 15¢ | 30 | 10.0% (3.5%–25.6%) | 9.6% | +0.4 pts |
-| all | favorite | 20¢ | 30 | 6.7% (1.8%–21.3%) | 8.8% | -2.2 pts |
-| all | underdog | 3¢ | 30 | 6.7% (1.8%–21.3%) | 12.7% | -6.0 pts |
-| all | underdog | 5¢ | 30 | 6.7% (1.8%–21.3%) | 12.3% | -5.6 pts |
-| all | underdog | 10¢ | 30 | 6.7% (1.8%–21.3%) | 11.4% | -4.7 pts |
-| all | underdog | 15¢ | 30 | 6.7% (1.8%–21.3%) | 10.6% | -3.9 pts |
-| all | underdog | 20¢ | 30 | 6.7% (1.8%–21.3%) | 9.9% | -3.3 pts |
+| nba | favorite | 3¢ | 30 | 80.0% (62.7%–90.5%) | 89.1% | -9.1 pts |
+| nba | favorite | 5¢ | 30 | 73.3% (55.6%–85.8%) | 83.4% | -10.1 pts |
+| nba | favorite | 10¢ | 30 | 73.3% (55.6%–85.8%) | 72.5% | +0.9 pts |
+| nba | favorite | 15¢ | 30 | 66.7% (48.8%–80.8%) | 64.4% | +2.3 pts |
+| nba | favorite | 20¢ | 30 | 56.7% (39.2%–72.6%) | 58.0% | -1.3 pts |
+| nba | underdog | 3¢ | 30 | 86.7% (70.3%–94.7%) | 95.7% | -9.0 pts |
+| nba | underdog | 5¢ | 30 | 80.0% (62.7%–90.5%) | 93.0% | -13.0 pts |
+| nba | underdog | 10¢ | 30 | 63.3% (45.5%–78.1%) | 80.9% | -17.6 pts |
+| nba | underdog | 15¢ | 30 | 53.3% (36.1%–69.8%) | 70.2% | -16.8 pts |
+| nba | underdog | 20¢ | 30 | 40.0% (24.6%–57.7%) | 60.6% | -20.6 pts |
+| all | favorite | 3¢ | 30 | 80.0% (62.7%–90.5%) | 89.1% | -9.1 pts |
+| all | favorite | 5¢ | 30 | 73.3% (55.6%–85.8%) | 83.4% | -10.1 pts |
+| all | favorite | 10¢ | 30 | 73.3% (55.6%–85.8%) | 72.5% | +0.9 pts |
+| all | favorite | 15¢ | 30 | 66.7% (48.8%–80.8%) | 64.4% | +2.3 pts |
+| all | favorite | 20¢ | 30 | 56.7% (39.2%–72.6%) | 58.0% | -1.3 pts |
+| all | underdog | 3¢ | 30 | 86.7% (70.3%–94.7%) | 95.7% | -9.0 pts |
+| all | underdog | 5¢ | 30 | 80.0% (62.7%–90.5%) | 93.0% | -13.0 pts |
+| all | underdog | 10¢ | 30 | 63.3% (45.5%–78.1%) | 80.9% | -17.6 pts |
+| all | underdog | 15¢ | 30 | 53.3% (36.1%–69.8%) | 70.2% | -16.8 pts |
+| all | underdog | 20¢ | 30 | 40.0% (24.6%–57.7%) | 60.6% | -20.6 pts |
 
 ⬆ = the whole confidence interval sits above the fair bound.
 
@@ -65,6 +68,18 @@ For games whose price touched each dip level: win rate vs. the average price at 
 
 | Sport | Side | Dip | Touches | Win rate after touch | Avg touch price | Win rate − price | Buy-the-dip P&L (±1.96 SE) |
 |---|---|---|---|---|---|---|---|
+| nba | favorite | 3¢ | 24 | 45.8% | 62.2% | -16.4 pts | -17.0¢ (±19.5¢) |
+| nba | favorite | 5¢ | 22 | 40.9% | 59.1% | -18.2 pts | -18.8¢ (±20.4¢) |
+| nba | favorite | 10¢ | 22 | 40.9% | 53.6% | -12.7 pts | -13.4¢ (±20.7¢) |
+| nba | favorite | 15¢ | 20 | 35.0% | 46.1% | -11.1 pts | -11.7¢ (±20.8¢) |
+| nba | underdog | 3¢ | 26 | 34.6% | 26.8% | +7.8 pts | +7.2¢ (±17.9¢) |
+| nba | underdog | 5¢ | 24 | 33.3% | 24.9% | +8.5 pts | +7.9¢ (±18.6¢) |
+| all | favorite | 3¢ | 24 | 45.8% | 62.2% | -16.4 pts | -17.0¢ (±19.5¢) |
+| all | favorite | 5¢ | 22 | 40.9% | 59.1% | -18.2 pts | -18.8¢ (±20.4¢) |
+| all | favorite | 10¢ | 22 | 40.9% | 53.6% | -12.7 pts | -13.4¢ (±20.7¢) |
+| all | favorite | 15¢ | 20 | 35.0% | 46.1% | -11.1 pts | -11.7¢ (±20.8¢) |
+| all | underdog | 3¢ | 26 | 34.6% | 26.8% | +7.8 pts | +7.2¢ (±17.9¢) |
+| all | underdog | 5¢ | 24 | 33.3% | 24.9% | +8.5 pts | +7.9¢ (±18.6¢) |
 
 ## 4. Is the opening price itself well calibrated?
 
@@ -72,16 +87,19 @@ If Kalshi's pregame price is biased (e.g. favorites too cheap), the in-game test
 
 | Opening price | Games | Avg opening price | Win rate | Win rate − price |
 |---|---|---|---|---|
-| 0–20¢ | 52 | 0.5% | 50.0% | +49.5 pts |
-| 30–40¢ | 2 | 33.5% | 50.0% | +16.5 pts |
-| 40–50¢ | 2 | 48.0% | 50.0% | +2.0 pts |
-| 50–60¢ | 2 | 52.5% | 50.0% | -2.5 pts |
-| 60–70¢ | 2 | 67.0% | 50.0% | -17.0 pts |
+| 0–20¢ | 6 | 12.0% | 16.7% | +4.7 pts |
+| 20–30¢ | 6 | 25.0% | 16.7% | -8.3 pts |
+| 30–40¢ | 7 | 34.4% | 57.1% | +22.7 pts |
+| 40–50¢ | 11 | 44.2% | 63.6% | +19.4 pts |
+| 50–60¢ | 11 | 56.2% | 36.4% | -19.9 pts |
+| 60–70¢ | 6 | 65.3% | 50.0% | -15.3 pts |
+| 70–80¢ | 6 | 73.8% | 66.7% | -7.1 pts |
+| 80–100¢ | 7 | 86.9% | 85.7% | -1.1 pts |
 
 ## Plain-language read
 
 - Dip-rate test: 0 of 10 all-sport dip levels show dips significantly more often than a fair market allows.
-- Snap-back test: of 0 all-sport dip levels, 0 show a buy-the-dip profit clearly above zero, 0 clearly below zero, the rest are inside the noise.
+- Snap-back test: of 6 all-sport dip levels, 0 show a buy-the-dip profit clearly above zero, 0 clearly below zero, the rest are inside the noise.
 - If both tests come back near zero, in-game swings are ordinary game volatility. A convergence exit would then mostly sell winners early, and holding the pregame edge to settlement is the better rule.
 - If snap-back is clearly positive, Kalshi overreacts in-game, and buying dips (or exiting at the sharp number) has its own edge worth testing against fees and depth.
 - Fees are not included. Kalshi's taker fee is largest near 50¢, so any edge under ~2¢ per contract is unlikely to survive taking liquidity.

@@ -1,3 +1,5 @@
-Research run at 2026-11-04T19:32:58.394680+00:00
+Research run at 2026-11-04T19:37:55.778862+00:00
 [nba] 1622 settled events listed, 1536 in lookback window, sampling 30
+raw historical candle sample: yes_bid={'close': '0.3200', 'high': '0.3200', 'low': '0.2500', 'open': '0.2500'} yes_ask={'close': '0.3300', 'high': '0.3400', 'low': '0.2600', 'open': '0.2600'}
+raw live candle sample: yes_bid={'close_dollars': '0.2800', 'high_dollars': '0.2800', 'low_dollars': '0.2700', 'open_dollars': '0.2700'} yes_ask={'close_dollars': '0.2900', 'high_dollars': '0.3000', 'low_dollars': '0.2800', 'open_dollars': '0.2800'}
 60 markets kept across 30 games
