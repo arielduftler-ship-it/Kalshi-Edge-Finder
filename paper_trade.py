@@ -24,6 +24,16 @@ How a trade is simulated:
     taker fee). Contracts are always whole numbers (floored).
   - Winning contracts settle at $1, losing at $0. `profit` is always
     `payout - buy_in`, spelled out as separate columns.
+  - Percent profit columns are stored as decimals (0.25 = +25%) and shown
+    as percentages in the Excel export:
+      flat_pct_profit         profit / buy_in on that one trade
+      flat_cumulative_pct     cumulative profit / cumulative buy_in (ROI on
+                              everything staked so far)
+      kelly_pct_profit        profit / buy_in on that one trade
+      kelly_bankroll_growth   bankroll_after / STARTING_BANKROLL - 1 (total
+                              return on the whole bankroll so far)
+    In the TOTAL row, flat_pct_profit and kelly_pct_profit are ROI on total
+    capital staked; kelly_bankroll_growth is the bankroll's overall return.
   - Only rows with a backfilled `outcome` (run backfill_outcomes.py first)
     are settled; everything else is still pending and skipped.
 
@@ -55,9 +65,11 @@ RESULT_FIELDS = [
     "book_fair_prob", "net_edge", "outcome", "won",
     # flat-stake columns
     "flat_contracts", "flat_buy_in", "flat_payout", "flat_profit", "flat_cumulative_profit",
+    "flat_pct_profit", "flat_cumulative_pct",
     # Kelly columns
     "full_kelly", "kelly_fraction", "bankroll_before", "kelly_contracts",
     "kelly_buy_in", "kelly_payout", "kelly_profit", "bankroll_after",
+    "kelly_pct_profit", "kelly_bankroll_growth",
 ]
 
 
@@ -71,6 +83,11 @@ def _float(row, key, default=0.0) -> float:
         return float(row.get(key) or default)
     except ValueError:
         return default
+
+
+def _pct(numerator: float, denominator: float):
+    """Return numerator / denominator rounded to 4 places, or '' if nothing was staked."""
+    return round(numerator / denominator, 4) if denominator else ""
 
 
 def simulate():
@@ -146,6 +163,8 @@ def simulate():
                 "flat_payout": round(flat_payout, 2),
                 "flat_profit": round(flat_profit, 2),
                 "flat_cumulative_profit": round(flat_cum, 2),
+                "flat_pct_profit": _pct(flat_profit, flat_buy_in),
+                "flat_cumulative_pct": _pct(flat_cum, flat_cost_total),
                 "full_kelly": round(size.full_kelly, 4),
                 "kelly_fraction": round(size.fraction, 4),
                 "bankroll_before": round(bankroll_start, 2),
@@ -154,11 +173,14 @@ def simulate():
                 "kelly_payout": round(kelly_payout, 2),
                 "kelly_profit": round(kelly_profit, 2),
                 "bankroll_after": "",  # filled in once the whole slate settles
+                "kelly_pct_profit": _pct(kelly_profit, size.stake),
+                "kelly_bankroll_growth": "",  # filled in once the whole slate settles
             })
 
         bankroll = bankroll_start + day_pnl
         for r in results[-len(slate):]:
             r["bankroll_after"] = round(bankroll, 2)
+            r["kelly_bankroll_growth"] = _pct(bankroll - STARTING_BANKROLL, STARTING_BANKROLL)
 
     with open(RESULTS_PATH, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=RESULT_FIELDS)
@@ -177,6 +199,10 @@ def simulate():
                 "kelly_payout": round(sum(r["kelly_payout"] for r in results), 2),
                 "kelly_profit": round(bankroll - STARTING_BANKROLL, 2),
                 "bankroll_after": round(bankroll, 2),
+                "flat_pct_profit": _pct(flat_cum, flat_cost_total),
+                "flat_cumulative_pct": _pct(flat_cum, flat_cost_total),
+                "kelly_pct_profit": _pct(bankroll - STARTING_BANKROLL, kelly_cost_total),
+                "kelly_bankroll_growth": _pct(bankroll - STARTING_BANKROLL, STARTING_BANKROLL),
             })
             writer.writerow(total)
 
@@ -191,7 +217,9 @@ def simulate():
     print(f"  FLAT  (${STAKE_PER_TRADE:,.0f}/trade):  profit ${flat_cum:,.2f}  "
           f"ROI on stake {flat_cum / flat_cost_total:+.1%}" if flat_cost_total else "")
     print(f"  KELLY (start ${STARTING_BANKROLL:,.0f}):  ending bankroll ${bankroll:,.2f}  "
-          f"({bankroll / STARTING_BANKROLL - 1:+.1%})")
+          f"({bankroll / STARTING_BANKROLL - 1:+.1%} bankroll growth, "
+          f"ROI on stake {(bankroll - STARTING_BANKROLL) / kelly_cost_total:+.1%})"
+          if kelly_cost_total else "")
     print(f"  Full ledger (with a TOTAL row) written to {RESULTS_PATH}")
 
 

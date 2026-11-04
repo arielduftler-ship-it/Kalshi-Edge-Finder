@@ -39,7 +39,8 @@ OUT_PATH = Path(__file__).parent / "data" / "predictions.xlsx"
 
 FONT_NAME = "Arial"
 PCT_COLS = {"book_fair_prob", "kalshi_price", "entry_price", "raw_edge", "fee_cost", "spread_cost", "net_edge"}
-PAPER_PCT_COLS = {"entry_price", "fee_cost", "book_fair_prob", "net_edge", "full_kelly", "kelly_fraction"}
+PAPER_PCT_COLS = {"entry_price", "fee_cost", "book_fair_prob", "net_edge", "full_kelly", "kelly_fraction",
+                  "flat_pct_profit", "flat_cumulative_pct", "kelly_pct_profit", "kelly_bankroll_growth"}
 PAPER_DOLLAR_COLS = {
     "flat_buy_in", "flat_payout", "flat_profit", "flat_cumulative_profit",
     "bankroll_before", "kelly_buy_in", "kelly_payout", "kelly_profit", "bankroll_after",
