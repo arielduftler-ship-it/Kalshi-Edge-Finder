@@ -41,7 +41,7 @@ Generated 2026-11-04 20:16 UTC. Sports: nba, nhl, nfl. Up to 500 games per sport
 
 ## 2. Do prices dip more often than a fair market would?
 
-Fair bound = average of (1 − p0) / (1 − (p0 − dip)). Real rates clearly ABOVE the bound mean overreaction. Rates below it are expected even in a fair market, because prices jump and minute closes miss some lows. A losing team counts as reaching every level, because it settles at $0 even when the last quote was higher.
+Fair bound = average of (1 − Po) / (1 − (Po − dip)). Real rates clearly ABOVE the bound mean overreaction. Rates below it are expected even in a fair market, because prices jump and minute closes miss some lows. A losing team counts as reaching every level, because it settles at $0 even when the last quote was higher.
 
 | Sport | Side | Dip | Games | Actual dip rate (95% CI) | Fair bound | Actual − bound |
 |---|---|---|---|---|---|---|
