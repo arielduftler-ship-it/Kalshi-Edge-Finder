@@ -1,5 +1,43 @@
-Research run at 2026-11-04T19:37:55.778862+00:00
-[nba] 1622 settled events listed, 1536 in lookback window, sampling 30
-raw historical candle sample: yes_bid={'close': '0.3200', 'high': '0.3200', 'low': '0.2500', 'open': '0.2500'} yes_ask={'close': '0.3300', 'high': '0.3400', 'low': '0.2600', 'open': '0.2600'}
-raw live candle sample: yes_bid={'close_dollars': '0.2800', 'high_dollars': '0.2800', 'low_dollars': '0.2700', 'open_dollars': '0.2700'} yes_ask={'close_dollars': '0.2900', 'high_dollars': '0.3000', 'low_dollars': '0.2800', 'open_dollars': '0.2800'}
-60 markets kept across 30 games
+Research run at 2026-11-04T19:42:56.980841+00:00
+[nba] 1622 settled events listed, 1536 in lookback window, sampling 500
+raw historical candle sample: yes_bid={'close': '0.9300', 'high': '0.9300', 'low': '0.9200', 'open': '0.9200'} yes_ask={'close': '0.9400', 'high': '0.9400', 'low': '0.9300', 'open': '0.9300'}
+[nba] 50/500 events processed
+[nba] 100/500 events processed
+[nba] 150/500 events processed
+[nba] 200/500 events processed
+[nba] 250/500 events processed
+[nba] 300/500 events processed
+[nba] 350/500 events processed
+[nba] 400/500 events processed
+raw live candle sample: yes_bid={'close_dollars': '0.7700', 'high_dollars': '0.8100', 'low_dollars': '0.7700', 'open_dollars': '0.8100'} yes_ask={'close_dollars': '0.7800', 'high_dollars': '0.8200', 'low_dollars': '0.7800', 'open_dollars': '0.8200'}
+[nba] 450/500 events processed
+[nba] 500/500 events processed
+[nhl] 1843 settled events listed, 1760 in lookback window, sampling 500
+[nhl] 50/500 events processed
+[nhl] 100/500 events processed
+[nhl] 150/500 events processed
+[nhl] 200/500 events processed
+[nhl] 250/500 events processed
+[nhl] 300/500 events processed
+[nhl] 350/500 events processed
+[nhl] 400/500 events processed
+[nhl] 450/500 events processed
+[nhl] 500/500 events processed
+[nfl] 502 settled events listed, 485 in lookback window, sampling 485
+[nfl] 50/485 events processed
+[nfl] 100/485 events processed
+[nfl] 150/485 events processed
+[nfl] 200/485 events processed
+[nfl] 250/485 events processed
+[nfl] 300/485 events processed
+[nfl] 350/485 events processed
+[nfl] 400/485 events processed
+[nfl] 450/485 events processed
+skipped nba:thin_ingame: 1
+skipped nfl:no_pregame_quote: 1
+skipped nfl:not_two_settled_markets(tie/void): 5
+skipped nfl:start_time_espn_no_match: 4
+skipped nhl:no_pregame_quote: 5
+skipped nhl:start_time_espn_ambiguous: 1
+skipped nhl:thin_ingame: 2
+2932 markets kept across 1466 games
