@@ -105,6 +105,7 @@ MAX_SPREAD = 0.10             # skip minutes with a wider bid/ask than this
 MIN_INGAME_MINUTES = 30       # skip markets with too few usable in-game minutes
 DIPS = [0.03, 0.05, 0.10, 0.15, 0.20]
 NEVER_BELOW_TOL = 0.01        # "never went below open" allows a 1-cent wobble
+PAIR_SUM_MIN, PAIR_SUM_MAX = 0.90, 1.10  # both teams' opening prices must add to about $1
 REQUEST_PAUSE = 0.12          # ~8 requests/sec, well under Kalshi's basic tier
 
 ET = ZoneInfo("America/New_York")
@@ -167,8 +168,15 @@ def paginate(path, params, key):
 
 
 def dollars(obj, key):
-    """Candle sub-objects carry prices either as '<key>_dollars' strings or as
-    integer cents under '<key>'. Returns a float in dollars or None."""
+    """Price in dollars from a candle sub-object, or None.
+
+    Kalshi is inconsistent here, confirmed against real data (Nov 2026):
+    the live tier returns '<key>_dollars' strings, but the historical tier
+    returns DOLLARS under the plain '<key>' field (e.g. close: "0.2400"),
+    which an earlier version of this script divided by 100 by mistake.
+    Rule: a '_dollars' field is dollars; a plain field is dollars if it has a
+    decimal point (string) or a fractional value (float), and cents only if
+    it is a whole number (e.g. 24)."""
     if not obj:
         return None
     v = obj.get(f"{key}_dollars")
@@ -177,6 +185,10 @@ def dollars(obj, key):
     v = obj.get(key)
     if v is None or v == "":
         return None
+    if isinstance(v, str):
+        return float(v) if "." in v else float(v) / 100.0
+    if isinstance(v, float) and not v.is_integer():
+        return v
     return float(v) / 100.0
 
 
@@ -274,14 +286,27 @@ def event_markets(event_ticker):
     return mk
 
 
+_raw_logged = set()
+
+
+def _log_raw(tier, cs):
+    if cs and tier not in _raw_logged:
+        _raw_logged.add(tier)
+        mid = cs[len(cs) // 2]
+        log(f"raw {tier} candle sample: yes_bid={mid.get('yes_bid')} yes_ask={mid.get('yes_ask')}")
+
+
 def candles(series, ticker, start_ts, end_ts):
     params = {"start_ts": start_ts, "end_ts": end_ts, "period_interval": 1,
               "include_latest_before_start": "true"}
     data = kget(f"/series/{series}/markets/{ticker}/candlesticks", params)
     cs = (data or {}).get("candlesticks") or []
-    if not cs:
-        data = kget(f"/historical/markets/{ticker}/candlesticks", params)
-        cs = (data or {}).get("candlesticks") or []
+    if cs:
+        _log_raw("live", cs)
+        return cs
+    data = kget(f"/historical/markets/{ticker}/candlesticks", params)
+    cs = (data or {}).get("candlesticks") or []
+    _log_raw("historical", cs)
     return cs
 
 
@@ -363,23 +388,35 @@ def collect():
                 continue
             s_ts = int(start.timestamp())
             e_ts = s_ts + int(GAME_WINDOW_HOURS[sport] * 3600)
+            pair, pair_paths, bad = [], [], None
             for m in mk:
                 try:
                     path = to_path(candles(series, m["ticker"], s_ts - PREGAME_MINUTES * 60 - 60, e_ts))
                 except Exception as e:
-                    skips[f"{sport}:candle_error"] += 1
+                    bad = "candle_error"
                     log(f"[{sport}] {m['ticker']} candle error: {e}")
-                    continue
+                    break
                 summ, why = summarize(path, s_ts)
                 if summ is None:
-                    skips[f"{sport}:{why}"] += 1
-                    continue
-                rows.append({"sport": sport, "event_ticker": ev, "ticker": m["ticker"],
+                    bad = why
+                    break
+                pair.append({"sport": sport, "event_ticker": ev, "ticker": m["ticker"],
                              "team": m["ticker"].rsplit("-", 1)[-1],
                              "start_utc": start.isoformat(), "start_source": src, "espn_id": espn_id or "",
                              "won": int(m["result"].lower() == "yes"), **summ})
-                for ts, mid, bid, ask in path:
-                    paths_out.append((m["ticker"], ts, round((ts - s_ts) / 60), round(mid, 4)))
+                pair_paths += [(m["ticker"], ts, round((ts - s_ts) / 60), round(mid, 4))
+                               for ts, mid, bid, ask in path]
+            # Safety check: the two teams' opening prices must roughly add to $1.
+            # If they don't, prices were mis-parsed or the start time is wrong.
+            if bad is None and not (PAIR_SUM_MIN <= pair[0]["p0"] + pair[1]["p0"] <= PAIR_SUM_MAX):
+                bad = "pair_prices_dont_sum_to_1"
+                if skips[f"{sport}:{bad}"] < 5:
+                    log(f"[{sport}] {ev} opening prices {pair[0]['p0']} + {pair[1]['p0']} don't sum to ~1, skipped")
+            if bad:
+                skips[f"{sport}:{bad}"] += 1
+                continue
+            rows.extend(pair)
+            paths_out.extend(pair_paths)
     for k, v in sorted(skips.items()):
         log(f"skipped {k}: {v}")
     return rows, paths_out
