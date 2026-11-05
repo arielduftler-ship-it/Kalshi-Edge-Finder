@@ -1,28 +1,73 @@
-Research run at 2026-11-04T19:42:56.980841+00:00
-[nba] 1622 settled events listed, 1536 in lookback window, sampling 500
-raw historical candle sample: yes_bid={'close': '0.9300', 'high': '0.9300', 'low': '0.9200', 'open': '0.9200'} yes_ask={'close': '0.9400', 'high': '0.9400', 'low': '0.9300', 'open': '0.9300'}
-[nba] 50/500 events processed
-[nba] 100/500 events processed
-[nba] 150/500 events processed
-[nba] 200/500 events processed
-[nba] 250/500 events processed
-[nba] 300/500 events processed
-[nba] 350/500 events processed
-[nba] 400/500 events processed
-raw live candle sample: yes_bid={'close_dollars': '0.7700', 'high_dollars': '0.8100', 'low_dollars': '0.7700', 'open_dollars': '0.8100'} yes_ask={'close_dollars': '0.7800', 'high_dollars': '0.8200', 'low_dollars': '0.7800', 'open_dollars': '0.8200'}
-[nba] 450/500 events processed
-[nba] 500/500 events processed
-[nhl] 1843 settled events listed, 1760 in lookback window, sampling 500
-[nhl] 50/500 events processed
-[nhl] 100/500 events processed
-[nhl] 150/500 events processed
-[nhl] 200/500 events processed
-[nhl] 250/500 events processed
-[nhl] 300/500 events processed
-[nhl] 350/500 events processed
-[nhl] 400/500 events processed
-[nhl] 450/500 events processed
-[nhl] 500/500 events processed
+Research run at 2026-11-05T00:09:42.798817+00:00
+[nba] 1622 settled events listed, 1536 in lookback window, sampling 1536
+raw historical candle sample: yes_bid={'close': '0.7300', 'high': '0.7500', 'low': '0.7300', 'open': '0.7500'} yes_ask={'close': '0.7400', 'high': '0.7600', 'low': '0.7400', 'open': '0.7600'}
+[nba] 50/1536 events processed
+[nba] 100/1536 events processed
+[nba] 150/1536 events processed
+[nba] 200/1536 events processed
+[nba] 250/1536 events processed
+[nba] 300/1536 events processed
+[nba] 350/1536 events processed
+[nba] 400/1536 events processed
+[nba] 450/1536 events processed
+[nba] 500/1536 events processed
+[nba] 550/1536 events processed
+[nba] 600/1536 events processed
+[nba] 650/1536 events processed
+[nba] 700/1536 events processed
+[nba] 750/1536 events processed
+[nba] 800/1536 events processed
+[nba] 850/1536 events processed
+[nba] 900/1536 events processed
+[nba] 950/1536 events processed
+[nba] 1000/1536 events processed
+[nba] 1050/1536 events processed
+[nba] 1100/1536 events processed
+[nba] 1150/1536 events processed
+[nba] 1200/1536 events processed
+[nba] 1250/1536 events processed
+[nba] 1300/1536 events processed
+[nba] 1350/1536 events processed
+raw live candle sample: yes_bid={'close_dollars': '0.5200', 'high_dollars': '0.5200', 'low_dollars': '0.5200', 'open_dollars': '0.5200'} yes_ask={'close_dollars': '0.5300', 'high_dollars': '0.5300', 'low_dollars': '0.5300', 'open_dollars': '0.5300'}
+[nba] 1400/1536 events processed
+[nba] 1450/1536 events processed
+[nba] 1500/1536 events processed
+[nhl] 1843 settled events listed, 1760 in lookback window, sampling 1760
+[nhl] 50/1760 events processed
+[nhl] 100/1760 events processed
+[nhl] 150/1760 events processed
+[nhl] 200/1760 events processed
+[nhl] 250/1760 events processed
+[nhl] 300/1760 events processed
+[nhl] 350/1760 events processed
+[nhl] 400/1760 events processed
+[nhl] 450/1760 events processed
+[nhl] 500/1760 events processed
+[nhl] 550/1760 events processed
+[nhl] 600/1760 events processed
+[nhl] 650/1760 events processed
+[nhl] 700/1760 events processed
+[nhl] 750/1760 events processed
+[nhl] 800/1760 events processed
+[nhl] 850/1760 events processed
+[nhl] 900/1760 events processed
+[nhl] 950/1760 events processed
+[nhl] 1000/1760 events processed
+[nhl] 1050/1760 events processed
+[nhl] 1100/1760 events processed
+[nhl] 1150/1760 events processed
+[nhl] 1200/1760 events processed
+[nhl] 1250/1760 events processed
+[nhl] 1300/1760 events processed
+[nhl] 1350/1760 events processed
+[nhl] 1400/1760 events processed
+[nhl] 1450/1760 events processed
+[nhl] 1500/1760 events processed
+[nhl] 1550/1760 events processed
+[nhl] 1600/1760 events processed
+[nhl] 1650/1760 events processed
+[nhl] 1700/1760 events processed
+[nhl] 1750/1760 events processed
 [nfl] 502 settled events listed, 485 in lookback window, sampling 485
 [nfl] 50/485 events processed
 [nfl] 100/485 events processed
@@ -33,11 +78,13 @@ raw live candle sample: yes_bid={'close_dollars': '0.7700', 'high_dollars': '0.8
 [nfl] 350/485 events processed
 [nfl] 400/485 events processed
 [nfl] 450/485 events processed
-skipped nba:thin_ingame: 1
+skipped nba:not_two_settled_markets(tie/void): 3
+skipped nba:thin_ingame: 2
 skipped nfl:no_pregame_quote: 1
 skipped nfl:not_two_settled_markets(tie/void): 5
 skipped nfl:start_time_espn_no_match: 4
-skipped nhl:no_pregame_quote: 5
-skipped nhl:start_time_espn_ambiguous: 1
-skipped nhl:thin_ingame: 2
-2932 markets kept across 1466 games
+skipped nhl:no_pregame_quote: 10
+skipped nhl:not_two_settled_markets(tie/void): 1
+skipped nhl:start_time_espn_ambiguous: 2
+skipped nhl:thin_ingame: 9
+7488 markets kept across 3744 games
