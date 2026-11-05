@@ -57,7 +57,15 @@ after the scan, and compares selling there against holding to settlement.
 Outputs (data/research/):
   market_summary.csv    one row per market (team contract) studied
   research_summary.md   all tables plus a plain-language read
-  dip_rate_vs_fair.png, snapback.png, opening_calibration.png, example_paths.png
+  dip_rate_vs_fair.png, snapback.png, opening_calibration.png, example_paths.png,
+  when_prices_move.png, comebacks.png
+
+Preseason and exhibition games are excluded (ESPN season type; NFL games in
+July/August when ESPN can't be matched).
+
+Sections 6-8 (timing and comebacks): when in the game prices move, how often
+a team that pulled ahead falls back to its opening price compared with a fair
+market, and how often teams that reached 80/90/95/98 cents still lost.
   debug.txt             counts of what was skipped and why
   paths.csv.gz          minute-by-minute mids (uploaded as an Actions artifact,
                         not committed, to keep the repo small)
@@ -105,6 +113,9 @@ MAX_SPREAD = 0.10             # skip minutes with a wider bid/ask than this
 MIN_INGAME_MINUTES = 30       # skip markets with too few usable in-game minutes
 DIPS = [0.03, 0.05, 0.10, 0.15, 0.20]
 NEVER_BELOW_TOL = 0.01        # "never went below open" allows a 1-cent wobble
+EXCLUDED_SEASON_TYPES = {1, 4}           # ESPN: 1 = preseason, 4 = off-season/exhibition
+CHECKPOINTS = [0.25, 0.50, 0.75]          # fractions of a typical game for the comeback tables
+GAIN_BINS = [(0.10, 0.20), (0.20, 0.30), (0.30, 0.40), (0.40, 1.00)]
 PAIR_SUM_MIN, PAIR_SUM_MAX = 0.90, 1.10  # both teams' opening prices must add to about $1
 REQUEST_PAUSE = 0.12          # ~8 requests/sec, well under Kalshi's basic tier
 
@@ -232,8 +243,9 @@ def espn_games(sport, d):
                     abbrs.add(ESPN_TO_KALSHI.get(sport, {}).get(a, a))
                     abbrs.add(a)
             start = ev.get("date")
+            stype = (ev.get("season") or {}).get("type")
             if start:
-                games.append({"id": ev.get("id"), "abbrs": abbrs,
+                games.append({"id": ev.get("id"), "abbrs": abbrs, "season_type": stype,
                               "start": datetime.fromisoformat(start.replace("Z", "+00:00"))})
     except Exception as e:
         log(f"[{sport}] ESPN scoreboard {d} failed: {e}")
@@ -242,21 +254,35 @@ def espn_games(sport, d):
 
 
 def resolve_start(sport, event_ticker, team_codes):
-    """Returns (start_utc, source, espn_id) or (None, reason, None)."""
+    """Returns (start_utc, source, espn_id, espn_season_type), or
+    (None, reason, None, None). ESPN season types: 1 preseason, 2 regular,
+    3 postseason, 4 off-season (e.g. all-star), 5 play-in."""
     parsed = parse_event_segment(event_ticker)
     if not parsed:
-        return None, "ticker_unparsed", None
+        return None, "ticker_unparsed", None, None
     d, hhmm, _ = parsed
-    espn_id = None
+    espn_id, stype = None, None
     hits = [g for g in espn_games(sport, d) if g["abbrs"] & set(team_codes)]
     if len(hits) == 1:
-        espn_id = hits[0]["id"]
+        espn_id, stype = hits[0]["id"], hits[0]["season_type"]
     if hhmm:
         local = datetime(d.year, d.month, d.day, int(hhmm[:2]), int(hhmm[2:]), tzinfo=ET)
-        return local.astimezone(timezone.utc), "ticker", espn_id
+        return local.astimezone(timezone.utc), "ticker", espn_id, stype
     if len(hits) == 1:
-        return hits[0]["start"], "espn", espn_id
-    return None, ("espn_ambiguous" if hits else "espn_no_match"), None
+        return hits[0]["start"], "espn", espn_id, stype
+    return None, ("espn_ambiguous" if hits else "espn_no_match"), None, None
+
+
+def is_exhibition(sport, event_ticker, stype):
+    """Preseason / exhibition games are excluded: starters barely play, so
+    prices behave differently. ESPN's season type decides when the game was
+    matched; for an unmatched NFL game, July/August means preseason."""
+    if stype in EXCLUDED_SEASON_TYPES:
+        return True
+    if stype is None and sport == "nfl":
+        parsed = parse_event_segment(event_ticker)
+        return bool(parsed and parsed[0].month in (7, 8))
+    return False
 
 
 # ---------------------------------------------------------------- data collection
@@ -344,6 +370,7 @@ def summarize(path, start_ts):
         "max_dip": round(p0 - min(mids), 4),
         "max_rise": round(max(mids) - p0, 4),
         "pct_min_below_open": round(sum(m < p0 - NEVER_BELOW_TOL for m in mids) / len(mids), 4),
+        "last_ingame_min": round((game[-1][0] - start_ts) / 60),
         "never_below_open": int(min(mids) >= p0 - NEVER_BELOW_TOL),
     }
     for d in DIPS:
@@ -382,7 +409,10 @@ def collect():
                 skips[f"{sport}:not_two_settled_markets(tie/void)"] += 1
                 continue
             codes = [m["ticker"].rsplit("-", 1)[-1] for m in mk]
-            start, src, espn_id = resolve_start(sport, ev, codes)
+            start, src, espn_id, stype = resolve_start(sport, ev, codes)
+            if is_exhibition(sport, ev, stype):
+                skips[f"{sport}:preseason_or_exhibition"] += 1
+                continue
             if start is None:
                 skips[f"{sport}:start_time_{src}"] += 1
                 continue
@@ -403,6 +433,7 @@ def collect():
                 pair.append({"sport": sport, "event_ticker": ev, "ticker": m["ticker"],
                              "team": m["ticker"].rsplit("-", 1)[-1],
                              "start_utc": start.isoformat(), "start_source": src, "espn_id": espn_id or "",
+                             "espn_season_type": stype if stype is not None else "",
                              "won": int(m["result"].lower() == "yes"), **summ})
                 pair_paths += [(m["ticker"], ts, round((ts - s_ts) / 60), round(mid, 4))
                                for ts, mid, bid, ask in path]
@@ -614,6 +645,231 @@ def analyse(rows):
     return md, groups, test2, test3, calib
 
 
+
+# ---------------------------------------------------------------- timing & comebacks
+
+def build_paths(paths_out):
+    by_t = defaultdict(list)
+    for t, ts, mins, mid in paths_out:
+        if mins > 0:
+            by_t[t].append((mins, mid))
+    for v in by_t.values():
+        v.sort()
+    return by_t
+
+
+def price_at(path, minute, max_stale=10):
+    """Last mid at or before `minute`, if it is no more than max_stale minutes old."""
+    best = None
+    for m, mid in path:
+        if m > minute:
+            break
+        best = (m, mid)
+    if best and minute - best[0] <= max_stale:
+        return best[1]
+    return None
+
+
+def analyse_dynamics(rows, paths_out):
+    """Sections 6-8: when prices move, how often a team that pulled ahead
+    falls back to its opening price, and which leads are effectively safe."""
+    paths = build_paths(paths_out)
+    by_ev = defaultdict(list)
+    for r in rows:
+        by_ev[r["event_ticker"]].append(r)
+    games = [v for v in by_ev.values() if len(v) == 2]
+    sports = sorted({r["sport"] for r in rows})
+    game_len = {}
+    for s in sports:
+        ends = sorted(r["last_ingame_min"] for g in games for r in g if r["sport"] == s)
+        game_len[s] = max(60, ends[len(ends) // 2])
+
+    md = ["## 6. When during a game do prices move?", "",
+          "Each game is split into ten equal slices of a typical game for that sport "
+          f"({', '.join(f'{s.upper()} ≈ {game_len[s]} min' for s in sports)}, measured from scheduled start). "
+          "\"Share of movement\" = how much of all the price movement in a game happens in that slice. "
+          "\"Leader wins\" = how often the team priced above 50¢ at the end of that slice went on to win.", ""]
+    move_share = {s: [0.0] * 10 for s in sports}
+    leader = {s: [[0, 0] for _ in range(10)] for s in sports}
+    for g in games:
+        s = g[0]["sport"]
+        L = game_len[s]
+        a = g[0]
+        pa = paths.get(a["ticker"], [])
+        prev = a["p0"]
+        tot = [0.0] * 10
+        for mins, mid in pa:
+            k = min(9, int(10 * mins / L))
+            tot[k] += abs(mid - prev)
+            prev = mid
+        T = sum(tot)
+        if T > 0:
+            for k in range(10):
+                move_share[s][k] += tot[k] / T
+        for k in range(10):
+            px = price_at(pa, (k + 1) * L / 10)
+            if px is None or abs(px - 0.5) < 0.005:
+                continue
+            leader[s][k][0] += 1
+            leader[s][k][1] += int((px > 0.5) == bool(a["won"]))
+    n_by = {s: sum(1 for g in games if g[0]["sport"] == s) for s in sports}
+    md += ["| Sport | " + " | ".join(f"{10 * k}–{10 * k + 10}%" for k in range(10)) + " |",
+           "|---|" + "---|" * 10]
+    for s in sports:
+        md.append(f"| {s} share of movement | " + " | ".join(pct(move_share[s][k] / n_by[s]) for k in range(10)) + " |")
+        md.append(f"| {s} leader wins | " + " | ".join(pct(leader[s][k][1] / leader[s][k][0]) if leader[s][k][0] else "—"
+                                                       for k in range(10)) + " |")
+    md.append("")
+
+    # 7. comebacks to the opening price
+    md += ["## 7. A team pulled ahead. How often does it fall back to its opening price?", "",
+           "At each checkpoint, take the team whose price is ABOVE its opening price, grouped by how far it has risen. "
+           "\"Fell back\" = its price later returned to its opening price or lower (a loss counts, since it settles at $0). "
+           "Fair = the most a fair market allows: (1 − current price) / (1 − opening price). "
+           "In a fair market only the current price matters, not how fast it got there or how much time is left. "
+           "Rows where actual is clearly BELOW fair mean early leads are safer than their price says (buy leaders); "
+           "clearly ABOVE means leads are fragile (fade leaders).", "",
+           "| Sport | Checkpoint | Rise since open | Games | Avg open → now | Fell back (95% CI) | Fair | Lost | Fair loss (1 − price) |",
+           "|---|---|---|---|---|---|---|---|---|"]
+    recov = []   # (sport, cp, bin, n, actual, lo, hi, fair, lost, fair_loss)
+    for s in sports + ["all"]:
+        for cp in CHECKPOINTS:
+            buckets = defaultdict(list)
+            for g in games:
+                if s != "all" and g[0]["sport"] != s:
+                    continue
+                L = game_len[g[0]["sport"]]
+                t = cp * L
+                for r in g:
+                    pa = paths.get(r["ticker"], [])
+                    pc = price_at(pa, t)
+                    if pc is None:
+                        continue
+                    gain = pc - r["p0"]
+                    for lo_, hi_ in GAIN_BINS:
+                        if lo_ <= gain < hi_:
+                            later = [mid for mins, mid in pa if mins > t]
+                            fell = (not r["won"]) or any(m <= r["p0"] for m in later)
+                            buckets[(lo_, hi_)].append((r["p0"], pc, int(fell), 1 - r["won"]))
+                            break
+            for b in GAIN_BINS:
+                v = buckets.get(b, [])
+                if len(v) < 15:
+                    continue
+                n = len(v)
+                k = sum(x[2] for x in v)
+                lo, hi = wilson(k, n)
+                fair = mean([min(1.0, (1 - x[1]) / (1 - x[0])) for x in v])
+                lost = mean([x[3] for x in v])
+                fair_loss = mean([1 - x[1] for x in v])
+                recov.append((s, cp, b, n, k / n, lo, hi, fair, lost, fair_loss))
+                flag = " ⬇" if hi < fair else (" ⬆" if lo > fair else "")
+                label = f"+{int(b[0] * 100)}–{int(b[1] * 100)}¢" if b[1] < 1 else f"+{int(b[0] * 100)}¢ or more"
+                md.append(f"| {s} | {int(cp * 100)}% in | {label} | {n} | {mean([x[0] for x in v]) * 100:.0f}¢ → "
+                          f"{mean([x[1] for x in v]) * 100:.0f}¢ | {pct(k / n)} ({pct(lo)}–{pct(hi)}){flag} | {pct(fair)} | "
+                          f"{pct(lost)} | {pct(fair_loss)} |")
+    md += ["", "⬇ = falls back clearly less often than fair (leads safer than priced). "
+           "⬆ = clearly more often (leads more fragile than priced).", ""]
+
+    # 8. which leads are unrecoverable
+    md += ["## 8. When is a lead effectively over?", "",
+           "Teams whose price first reached each level, at any point in the game, and how often they still lost. "
+           "In a fair market the loss rate equals 1 − the price at that moment. "
+           "\"Point of no return\" = for winners, the median share of the game played when their price crossed 90¢ for the last time "
+           "(it never dropped back below 90¢ after that).", "",
+           "| Sport | Price first reached | Teams | Still lost | Fair loss rate | Lost − fair |", "|---|---|---|---|---|---|"]
+    safe = []
+    for s in sports + ["all"]:
+        for thr in (0.80, 0.90, 0.95, 0.98):
+            v = []
+            for g in games:
+                if s != "all" and g[0]["sport"] != s:
+                    continue
+                for r in g:
+                    first = next((mid for mins, mid in paths.get(r["ticker"], []) if mid >= thr), None)
+                    if first is not None:
+                        v.append((1 - r["won"], 1 - first))
+            if len(v) < 20:
+                continue
+            lost, fair = mean([x[0] for x in v]), mean([x[1] for x in v])
+            safe.append((s, thr, len(v), lost, fair))
+            md.append(f"| {s} | {int(thr * 100)}¢ | {len(v)} | {pct(lost)} | {pct(fair)} | {100 * (lost - fair):+.1f} pts |")
+    md += ["", "| Sport | Point of no return (median share of game played) | Winners measured |", "|---|---|---|"]
+    for s in sports:
+        fr = []
+        for g in games:
+            if g[0]["sport"] != s:
+                continue
+            for r in g:
+                if not r["won"]:
+                    continue
+                pa = paths.get(r["ticker"], [])
+                if not pa or pa[-1][1] < 0.90:
+                    continue
+                last_below = max((mins for mins, mid in pa if mid < 0.90), default=0)
+                fr.append(min(1.0, last_below / game_len[s]))
+        if fr:
+            fr.sort()
+            md.append(f"| {s} | {pct(fr[len(fr) // 2])} | {len(fr)} |")
+    md.append("")
+
+    # charts
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.2))
+    x = [10 * k + 5 for k in range(10)]
+    for s in sports:
+        axes[0].plot(x, [100 * move_share[s][k] / n_by[s] for k in range(10)], "o-", label=s.upper())
+        axes[1].plot(x, [100 * leader[s][k][1] / leader[s][k][0] if leader[s][k][0] else float("nan")
+                         for k in range(10)], "o-", label=s.upper())
+    axes[0].set_title("Share of all price movement, by part of the game")
+    axes[0].set_xlabel("% of game played")
+    axes[0].set_ylabel("% of the game's movement")
+    axes[1].set_title("How often the team ahead (>50¢) goes on to win")
+    axes[1].set_xlabel("% of game played")
+    axes[1].set_ylabel("leader wins (%)")
+    for ax in axes:
+        ax.grid(alpha=0.3)
+        ax.legend()
+    fig.tight_layout()
+    fig.savefig(OUT_DIR / "when_prices_move.png", dpi=130)
+    plt.close(fig)
+
+    allrows = [t for t in recov if t[0] == "all"]
+    if allrows:
+        fig, axes = plt.subplots(1, len(CHECKPOINTS), figsize=(4.3 * len(CHECKPOINTS), 4), squeeze=False)
+        for ax, cp in zip(axes[0], CHECKPOINTS):
+            pts = [t for t in allrows if t[1] == cp]
+            xs = list(range(len(pts)))
+            ax.errorbar(xs, [100 * t[4] for t in pts],
+                        yerr=[[100 * (t[4] - t[5]) for t in pts], [100 * (t[6] - t[4]) for t in pts]],
+                        fmt="o-", label="actual fell back")
+            ax.plot(xs, [100 * t[7] for t in pts], "--", label="fair")
+            ax.set_xticks(xs)
+            ax.set_xticklabels([f"+{int(t[2][0] * 100)}" + ("+" if t[2][1] >= 1 else f"–{int(t[2][1] * 100)}") for t in pts])
+            ax.set_title(f"{int(cp * 100)}% of the game played")
+            ax.set_xlabel("rise since opening price (¢)")
+            ax.set_ylabel("% that fell back to opening price")
+            ax.set_ylim(0, 100)
+            ax.grid(alpha=0.3)
+        axes[0][0].legend(fontsize=8)
+        fig.suptitle("After pulling ahead, how often does a team fall back to its opening price? (all sports)")
+        fig.tight_layout()
+        fig.savefig(OUT_DIR / "comebacks.png", dpi=130)
+        plt.close(fig)
+
+    # plain read
+    md += ["### Plain-language read for sections 6–8", ""]
+    fr_safe = [t for t in recov if t[0] == "all" and t[6] < t[7]]
+    fr_frag = [t for t in recov if t[0] == "all" and t[5] > t[7]]
+    md.append(f"- Comebacks to the opening price: of {len([t for t in recov if t[0] == 'all'])} all-sport rows, "
+              f"{len(fr_safe)} fall back clearly less often than fair and {len(fr_frag)} clearly more often.")
+    big = [t for t in safe if t[0] == "all" and abs(t[3] - t[4]) > 0.02]
+    md.append("- Big leads: " + ("; ".join(f"teams that reached {int(t[1] * 100)}¢ lost {pct(t[3])} vs. fair {pct(t[4])}" for t in big)
+              if big else "teams that reached 80/90/95/98¢ lost about as often as their price said (within 2 points)."))
+    md.append("- If everything is near fair, the price already prices in time remaining, and there is no edge in "
+              "how fast a lead built up. \"Unrecoverable\" is then just a price level: a team at 95¢ comes back 1 time in 20.")
+    md.append("")
+    return md, ["![when prices move](when_prices_move.png)", "", "![comebacks](comebacks.png)", ""]
+
 # ---------------------------------------------------------------- scan_log tie-in
 
 def scan_log_check():
@@ -770,8 +1026,11 @@ def main():
     else:
         md, groups, test2, test3, calib = analyse(rows)
         md += scan_log_check()
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        dyn_md, dyn_charts = analyse_dynamics(rows, paths_out)
+        md += dyn_md
         md += ["## Charts", "", "![dip rates](dip_rate_vs_fair.png)", "", "![snap-back](snapback.png)", "",
-               "![calibration](opening_calibration.png)", "", "![examples](example_paths.png)", ""]
+               "![calibration](opening_calibration.png)", "", "![examples](example_paths.png)", ""] + dyn_charts
         charts(groups, test2, test3, calib, rows, paths_out)
     (OUT_DIR / "research_summary.md").write_text("\n".join(md))
     (OUT_DIR / "debug.txt").write_text("\n".join(debug) + "\n")
