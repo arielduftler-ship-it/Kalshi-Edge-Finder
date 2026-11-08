@@ -1,30 +1,35 @@
-Run at 2026-11-07T17:57:14.501975+00:00
-[nfl] Odds API credits: 16 used, 484 remaining this month
-[nfl] 27 games from book (26 outside the 1-day window, skipped), 28 Kalshi events open, 0 skipped (no exchange/sharp book quoted them), 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 1 matched but weren't underpriced-favorite signals, 0 were signals already logged on an earlier scan, 0 signals.
-[nfl] books quoting in-window games: draftkings(soft)=1, fanduel(soft)=1, betmgm(soft)=1, smarkets(exchange)=1, betonlineag(sharp)=1, lowvig(sharp)=1, novig(exchange)=1, prophetx(exchange)=1, matchbook(exchange)=1, betfair_ex_eu(exchange)=1
+Run at 2026-11-08T18:13:54.799070+00:00
+[nfl] Odds API credits: 19 used, 481 remaining this month
+[nfl] 24 games from book (12 outside the 1-day window, skipped), 27 Kalshi events open, 0 skipped (no exchange/sharp book quoted them), 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 12 matched but weren't underpriced-favorite signals, 0 were signals already logged on an earlier scan, 0 signals.
+[nfl] books quoting in-window games: draftkings(soft)=12, fanduel(soft)=12, smarkets(exchange)=12, betonlineag(sharp)=12, lowvig(sharp)=12, novig(exchange)=12, prophetx(exchange)=12, betmgm(soft)=12, betfair_ex_eu(exchange)=12, matchbook(exchange)=9
 [nfl] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Cincinnati Bengals @ Atlanta Falcons fair=0.332 kalshi=0.385 net_edge=+0.031 books=10 (sharp=7, 96% of weight)
-[nba] Odds API credits: 17 used, 483 remaining this month
-[nba] 11 games from book (4 outside the 1-day window, skipped), 31 Kalshi events open, 0 skipped (no exchange/sharp book quoted them), 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 7 matched but weren't underpriced-favorite signals, 0 were signals already logged on an earlier scan, 0 signals.
-[nba] books quoting in-window games: fanduel(soft)=7, betfair_ex_eu(exchange)=7, smarkets(exchange)=7, novig(exchange)=7, prophetx(exchange)=7, draftkings(soft)=7, betonlineag(sharp)=7, lowvig(sharp)=7, matchbook(exchange)=7, betmgm(soft)=7
+    Detroit Lions @ Miami Dolphins      fair=0.150 kalshi=0.245 net_edge=+0.077 books=10 (sharp=7, 96% of weight)
+    Cleveland Browns @ New Orleans Saints fair=0.798 kalshi=0.735 net_edge=+0.045 books=9 (sharp=6, 96% of weight)
+    New York Jets @ Kansas City Chiefs  fair=0.846 kalshi=0.765 net_edge=+0.064 books=10 (sharp=7, 96% of weight)
+    New York Giants @ Philadelphia Eagles fair=0.351 kalshi=0.375 net_edge=+0.003 books=9 (sharp=6, 96% of weight)
+    Denver Broncos @ Carolina Panthers  fair=0.319 kalshi=0.365 net_edge=+0.024 books=10 (sharp=7, 96% of weight)
+    Dallas Cowboys @ Indianapolis Colts fair=0.245 kalshi=0.295 net_edge=+0.031 books=10 (sharp=7, 96% of weight)
+    Los Angeles Rams @ Washington Commanders fair=0.307 kalshi=0.355 net_edge=+0.027 books=9 (sharp=6, 96% of weight)
+    Houston Texans @ Los Angeles Chargers fair=0.255 kalshi=0.325 net_edge=+0.050 books=10 (sharp=7, 96% of weight)
+[nba] Odds API credits: 20 used, 480 remaining this month
+[nba] 11 games from book (4 outside the 1-day window, skipped), 35 Kalshi events open, 0 skipped (no exchange/sharp book quoted them), 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 7 matched but weren't underpriced-favorite signals, 0 were signals already logged on an earlier scan, 0 signals.
+[nba] books quoting in-window games: fanduel(soft)=7, novig(exchange)=7, betfair_ex_eu(exchange)=7, betonlineag(sharp)=7, lowvig(sharp)=7, smarkets(exchange)=7, matchbook(exchange)=7, prophetx(exchange)=7, betmgm(soft)=7, draftkings(soft)=6
 [nba] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Denver Nuggets @ Indiana Pacers     fair=0.179 kalshi=0.265 net_edge=+0.067 books=10 (sharp=7, 96% of weight)
-    Brooklyn Nets @ Atlanta Hawks       fair=0.784 kalshi=0.715 net_edge=+0.049 books=10 (sharp=7, 96% of weight)
-    New York Knicks @ Cleveland Cavaliers fair=0.296 kalshi=0.355 net_edge=+0.038 books=10 (sharp=7, 96% of weight)
-    Washington Wizards @ Oklahoma City Thunder fair=0.919 kalshi=0.835 net_edge=+0.069 books=10 (sharp=7, 96% of weight)
-    Orlando Magic @ Golden State Warriors fair=0.731 kalshi=0.670 net_edge=+0.036 books=10 (sharp=7, 96% of weight)
-    Houston Rockets @ Phoenix Suns      fair=0.217 kalshi=0.295 net_edge=+0.058 books=10 (sharp=7, 96% of weight)
-    San Antonio Spurs @ Portland Trail Blazers fair=0.288 kalshi=0.345 net_edge=+0.037 books=10 (sharp=7, 96% of weight)
-[nhl] Odds API credits: 18 used, 482 remaining this month
-[nhl] 18 games from book (6 outside the 1-day window, skipped), 47 Kalshi events open, 0 skipped (no exchange/sharp book quoted them), 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 12 matched but weren't underpriced-favorite signals, 0 were signals already logged on an earlier scan, 0 signals.
-[nhl] books quoting in-window games: draftkings(soft)=12, smarkets(exchange)=12, fanduel(soft)=12, prophetx(exchange)=12, matchbook(exchange)=12, betmgm(soft)=12, novig(exchange)=12, betonlineag(sharp)=11, lowvig(sharp)=11
+    Philadelphia 76ers @ Chicago Bulls  fair=0.127 kalshi=0.215 net_edge=+0.071 books=10 (sharp=7, 96% of weight)
+    Los Angeles Lakers @ Detroit Pistons fair=0.771 kalshi=0.715 net_edge=+0.037 books=9 (sharp=7, 97% of weight)
+    Utah Jazz @ Minnesota Timberwolves  fair=0.928 kalshi=0.845 net_edge=+0.069 books=10 (sharp=7, 96% of weight)
+    Brooklyn Nets @ Dallas Mavericks    fair=0.822 kalshi=0.745 net_edge=+0.059 books=10 (sharp=7, 96% of weight)
+    Boston Celtics @ Milwaukee Bucks    fair=0.061 kalshi=0.145 net_edge=+0.071 books=10 (sharp=7, 96% of weight)
+    New Orleans Pelicans @ Los Angeles Clippers fair=0.459 kalshi=0.465 net_edge=-0.016 books=10 (sharp=7, 96% of weight)
+    Miami Heat @ Sacramento Kings       fair=0.119 kalshi=0.205 net_edge=+0.069 books=10 (sharp=7, 96% of weight)
+[nhl] Odds API credits: 21 used, 479 remaining this month
+[nhl] 9 games from book (3 outside the 1-day window, skipped), 49 Kalshi events open, 0 skipped (no exchange/sharp book quoted them), 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 6 matched but weren't underpriced-favorite signals, 0 were signals already logged on an earlier scan, 0 signals.
+[nhl] books quoting in-window games: draftkings(soft)=6, smarkets(exchange)=6, lowvig(sharp)=6, betonlineag(sharp)=6, fanduel(soft)=6, prophetx(exchange)=6, matchbook(exchange)=6, novig(exchange)=6, betmgm(soft)=6
 [nhl] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Florida Panthers @ Washington Capitals fair=0.554 kalshi=0.535 net_edge=-0.003 books=7 (sharp=4, 94% of weight)
-    St Louis Blues @ Nashville Predators fair=0.485 kalshi=0.485 net_edge=-0.022 books=9 (sharp=6, 96% of weight)
-    New York Rangers @ Seattle Kraken   fair=0.424 kalshi=0.445 net_edge=-0.001 books=9 (sharp=6, 96% of weight)
-    Montréal Canadiens @ Toronto Maple Leafs fair=0.458 kalshi=0.465 net_edge=-0.016 books=9 (sharp=6, 96% of weight)
-    New Jersey Devils @ New York Islanders fair=0.392 kalshi=0.415 net_edge=+0.001 books=9 (sharp=6, 96% of weight)
-    Utah Mammoth @ Ottawa Senators      fair=0.469 kalshi=0.475 net_edge=-0.016 books=9 (sharp=6, 96% of weight)
-    Chicago Blackhawks @ Carolina Hurricanes fair=0.889 kalshi=0.805 net_edge=+0.068 books=9 (sharp=6, 96% of weight)
-    San Jose Sharks @ Dallas Stars      fair=0.814 kalshi=0.735 net_edge=+0.060 books=9 (sharp=6, 96% of weight)
+    Florida Panthers @ Boston Bruins    fair=0.612 kalshi=0.585 net_edge=+0.005 books=9 (sharp=6, 96% of weight)
+    Vegas Golden Knights @ Buffalo Sabres fair=0.497 kalshi=0.495 net_edge=-0.021 books=9 (sharp=6, 96% of weight)
+    Tampa Bay Lightning @ Winnipeg Jets fair=0.384 kalshi=0.425 net_edge=+0.019 books=9 (sharp=6, 96% of weight)
+    Philadelphia Flyers @ Calgary Flames fair=0.464 kalshi=0.475 net_edge=-0.012 books=9 (sharp=6, 96% of weight)
+    New Jersey Devils @ Toronto Maple Leafs fair=0.371 kalshi=0.415 net_edge=+0.022 books=9 (sharp=6, 96% of weight)
+    Pittsburgh Penguins @ Anaheim Ducks fair=0.542 kalshi=0.515 net_edge=+0.005 books=9 (sharp=6, 96% of weight)
 Scan complete: 0 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
