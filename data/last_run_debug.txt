@@ -1,25 +1,23 @@
-Run at 2026-11-17T21:31:39.131981+00:00
-[nfl] Odds API credits: 46 used, 454 remaining this month
+Run at 2026-11-18T21:07:29.308997+00:00
+[nfl] Odds API credits: 49 used, 451 remaining this month
 [nfl] 29 games from book (29 outside the 1-day window, skipped), 29 Kalshi events open, 0 skipped (no exchange/sharp book quoted them), 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 0 matched but weren't underpriced-favorite signals, 0 were signals already logged on an earlier scan, 0 signals.
-[nba] Odds API credits: 47 used, 453 remaining this month
-[nba] 5 games from book (0 outside the 1-day window, skipped), 34 Kalshi events open, 0 skipped (no exchange/sharp book quoted them), 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 5 matched but weren't underpriced-favorite signals, 0 were signals already logged on an earlier scan, 0 signals.
-[nba] books quoting in-window games: fanduel(soft)=5, novig(exchange)=5, betonlineag(sharp)=5, lowvig(sharp)=5, smarkets(exchange)=5, prophetx(exchange)=5, matchbook(exchange)=5, draftkings(soft)=5, betmgm(soft)=5, betfair_ex_eu(exchange)=5
+[nba] Odds API credits: 50 used, 450 remaining this month
+[nba] 12 games from book (0 outside the 1-day window, skipped), 34 Kalshi events open, 0 skipped (no exchange/sharp book quoted them), 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 12 matched but weren't underpriced-favorite signals, 0 were signals already logged on an earlier scan, 0 signals.
+[nba] books quoting in-window games: fanduel(soft)=12, lowvig(sharp)=12, novig(exchange)=12, betonlineag(sharp)=12, betfair_ex_eu(exchange)=12, betmgm(soft)=12, smarkets(exchange)=12, matchbook(exchange)=12, prophetx(exchange)=12, draftkings(soft)=12
 [nba] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    New York Knicks @ Toronto Raptors   fair=0.346 kalshi=0.385 net_edge=+0.018 books=10 (sharp=7, 96% of weight)
-    Detroit Pistons @ San Antonio Spurs fair=0.880 kalshi=0.795 net_edge=+0.068 books=10 (sharp=7, 96% of weight)
-    Portland Trail Blazers @ Minnesota Timberwolves fair=0.587 kalshi=0.565 net_edge=-0.000 books=10 (sharp=7, 96% of weight)
-    Utah Jazz @ Los Angeles Clippers    fair=0.749 kalshi=0.685 net_edge=+0.044 books=10 (sharp=7, 96% of weight)
-    Charlotte Hornets @ Los Angeles Lakers fair=0.805 kalshi=0.725 net_edge=+0.061 books=10 (sharp=7, 96% of weight)
-[nhl] Odds API credits: 48 used, 452 remaining this month
-[nhl] 14 games from book (3 outside the 1-day window, skipped), 52 Kalshi events open, 0 skipped (no exchange/sharp book quoted them), 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 11 matched but weren't underpriced-favorite signals, 0 were signals already logged on an earlier scan, 0 signals.
-[nhl] books quoting in-window games: draftkings(soft)=11, lowvig(sharp)=11, novig(exchange)=11, betonlineag(sharp)=11, smarkets(exchange)=11, fanduel(soft)=11, betmgm(soft)=11, prophetx(exchange)=11, matchbook(exchange)=11
+    Memphis Grizzlies @ Cleveland Cavaliers fair=0.684 kalshi=0.635 net_edge=+0.028 books=10 (sharp=7, 96% of weight)
+    Houston Rockets @ Indiana Pacers    fair=0.184 kalshi=0.265 net_edge=+0.063 books=10 (sharp=7, 96% of weight)
+    Milwaukee Bucks @ Miami Heat        fair=0.931 kalshi=0.845 net_edge=+0.072 books=10 (sharp=7, 96% of weight)
+    Philadelphia 76ers @ Orlando Magic  fair=0.504 kalshi=0.505 net_edge=-0.021 books=10 (sharp=7, 96% of weight)
+    Chicago Bulls @ Brooklyn Nets       fair=0.587 kalshi=0.565 net_edge=-0.000 books=10 (sharp=7, 96% of weight)
+    Washington Wizards @ Toronto Raptors fair=0.703 kalshi=0.635 net_edge=+0.047 books=10 (sharp=7, 96% of weight)
+    Atlanta Hawks @ Oklahoma City Thunder fair=0.767 kalshi=0.695 net_edge=+0.052 books=10 (sharp=7, 96% of weight)
+    Golden State Warriors @ Dallas Mavericks fair=0.691 kalshi=0.635 net_edge=+0.035 books=10 (sharp=7, 96% of weight)
+[nhl] Odds API credits: 51 used, 449 remaining this month
+[nhl] 15 games from book (12 outside the 1-day window, skipped), 42 Kalshi events open, 0 skipped (no exchange/sharp book quoted them), 0 had no matching Kalshi event, 0 matched but date unverified (ticker date didn't parse), 3 matched but weren't underpriced-favorite signals, 0 were signals already logged on an earlier scan, 0 signals.
+[nhl] books quoting in-window games: draftkings(soft)=3, novig(exchange)=3, smarkets(exchange)=3, fanduel(soft)=3, lowvig(sharp)=3, betonlineag(sharp)=3, betmgm(soft)=3, matchbook(exchange)=3, prophetx(exchange)=3
 [nhl] sample of matched-but-not-signal games (favorite must have kalshi<0.5):
-    Los Angeles Kings @ Boston Bruins   fair=0.630 kalshi=0.595 net_edge=+0.013 books=9 (sharp=6, 96% of weight)
-    Buffalo Sabres @ Philadelphia Flyers fair=0.439 kalshi=0.455 net_edge=-0.006 books=9 (sharp=6, 96% of weight)
-    Columbus Blue Jackets @ New York Islanders fair=0.571 kalshi=0.545 net_edge=+0.004 books=9 (sharp=6, 96% of weight)
-    Edmonton Oilers @ Florida Panthers  fair=0.549 kalshi=0.545 net_edge=-0.019 books=9 (sharp=6, 96% of weight)
-    Ottawa Senators @ Winnipeg Jets     fair=0.424 kalshi=0.445 net_edge=-0.002 books=9 (sharp=6, 96% of weight)
-    Toronto Maple Leafs @ Chicago Blackhawks fair=0.410 kalshi=0.445 net_edge=+0.013 books=9 (sharp=6, 96% of weight)
-    Washington Capitals @ Tampa Bay Lightning fair=0.640 kalshi=0.605 net_edge=+0.013 books=9 (sharp=6, 96% of weight)
-    Anaheim Ducks @ St Louis Blues      fair=0.570 kalshi=0.545 net_edge=+0.003 books=9 (sharp=6, 96% of weight)
+    Boston Bruins @ Detroit Red Wings   fair=0.502 kalshi=0.505 net_edge=-0.019 books=9 (sharp=6, 96% of weight)
+    Montréal Canadiens @ New Jersey Devils fair=0.643 kalshi=0.605 net_edge=+0.016 books=9 (sharp=6, 96% of weight)
+    Colorado Avalanche @ Utah Mammoth   fair=0.501 kalshi=0.505 net_edge=-0.019 books=9 (sharp=6, 96% of weight)
 Scan complete: 0 signal row(s) written to /home/runner/work/Kalshi-Edge-Finder/Kalshi-Edge-Finder/data/scan_log.csv
